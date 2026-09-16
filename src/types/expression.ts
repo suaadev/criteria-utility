@@ -1,3 +1,3 @@
 export abstract class Expression {
-  abstract kind: string;
+  constructor(readonly kind: string) {}
 }

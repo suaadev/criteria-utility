@@ -1,10 +1,8 @@
 import { Expression } from "./expression";
 
 export class ArrayExpression extends Expression {
-  kind: string = "ArrayExpression" as const;
-
   constructor(readonly elements: Expression[]) {
-    super();
+    super("ArrayExpression");
   }
 
   static create(elements: Expression[]) {

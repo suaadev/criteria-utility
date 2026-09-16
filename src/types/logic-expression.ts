@@ -2,14 +2,12 @@ import { Expression } from "./expression";
 type LogicalOperator = "&&" | "&" | "||" | "|";
 
 export class LogicExpression extends Expression {
-  kind: string = "LogicExpression" as const;
-
   constructor(
     readonly left: Expression,
     readonly operator: LogicalOperator,
     public right: Expression,
   ) {
-    super();
+    super("LogicExpression");
   }
 
   static create(

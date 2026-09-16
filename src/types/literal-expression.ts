@@ -3,10 +3,8 @@ import { Expression } from "./expression";
 export type LiteralExpressionValids = number | string | boolean;
 
 export class LiteralExpression extends Expression {
-  kind: string = "LiteralExpression" as const;
-
   constructor(readonly value: LiteralExpressionValids) {
-    super();
+    super("LiteralExpression");
   }
 
   static create(value: LiteralExpressionValids) {

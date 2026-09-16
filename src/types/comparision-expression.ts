@@ -3,14 +3,12 @@ import { Expression } from "./expression";
 export type ComparasionOperator = "==" | "!=" | ">" | "<" | ">=" | "<=" | "in";
 
 export class ComparisonExpression extends Expression {
-  kind: string = "ComparisonExpression" as const;
-
   constructor(
     readonly left: Expression,
     readonly operator: ComparasionOperator,
     readonly right: Expression,
   ) {
-    super();
+    super("ComparisonExpression");
   }
 
   static create(
