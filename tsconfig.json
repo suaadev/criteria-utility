@@ -4,10 +4,17 @@
         "rootDir": ".",
         "outDir": "./dist",
         "noImplicitAny": true,
+        "skipLibCheck": true,
+        "types": [
+            "node"
+        ],
         "strictNullChecks": true,
     },
     "exclude": [
         "node_modules",
+        "**/*.spec.ts",
+        "**/*.test.ts",
+        "tests"
     ],
     "include": [
         "src/**/*"
