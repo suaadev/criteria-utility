@@ -1,5 +1,5 @@
 import { Expression } from "./expression";
-type LogicalOperator = "&&" | "&" | "||" | "|";
+export type LogicalOperator = "&&" | "&" | "||" | "|";
 
 export class LogicExpression extends Expression {
   constructor(

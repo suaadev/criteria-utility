@@ -1,21 +1,42 @@
-import { Filter } from "./criteria-filter";
-import { toObjectPlainParser } from "./helpers/to-object-plain.parser.";
-import { LiteralExpression } from "./types/literal-expression";
+import { ExpressionRaw, FilterParser } from "./filter-parser";
 
-const exp1 = Filter.equals(
-  LiteralExpression.create(2),
-  Filter.and(
-    Filter.equals(LiteralExpression.create(2), LiteralExpression.create(2)),
-    LiteralExpression.create(2),
-    Filter.not(
-      Filter.equals(LiteralExpression.create(2), LiteralExpression.create(2)),
-    ),
-    Filter.not(LiteralExpression.create(7)),
-    Filter.or(LiteralExpression.create(7), LiteralExpression.create(7)),
-  ),
-);
+const exp1: ExpressionRaw = {
+  and: [
+    {
+      not: {
+        and: [
+          {
+            gt: [1, 2],
+          },
+        ],
+      },
+    },
+    2,
+    {
+      or: [1, 2, { and: [{ gt: [1, 2] }] }],
+    },
+    {
+      not: {
+        not: {
+          not: { or: [{ and: [{ equals: [1, 2] }] }, 1, true] },
+        },
+      },
+    },
+  ],
+};
 
-const objectPlain = toObjectPlainParser(exp1);
+const exp2: ExpressionRaw = {
+  equals: [
+    { or: [1, 2] },
+    { not: { not: { not: { not: true } } } },
+    {
+      not: {
+        and: [{ equals: [2, 3] }, { equals: [4, 5] }, { equals: [6, 7] }],
+      },
+    },
+  ],
+};
 
-console.dir(exp1, { depth: null });
-console.dir(Filter.checkExpression(exp1), { depth: null });
+const exp = FilterParser.parser(exp2);
+
+console.dir(exp, { depth: null });
