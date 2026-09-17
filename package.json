@@ -7,15 +7,16 @@
   "type": "commonjs",
   "main": "",
   "scripts": {
-    "start": "npx tsc  && node dist/src/main.js",
+    "start": "npx tsc && node dist/src/main.js",
     "compile": "npx tsc",
-    "test": "jest --coverage"
+    "test": "jest --verbose --coverage"
   },
   "devDependencies": {
     "@jest/globals": "^30.5.1",
     "@swc/core": "^1.16.2",
     "@swc/jest": "^0.2.39",
     "@types/node": "^22.20.3",
+    "jest": "^30.5.1",
     "typescript": "^7.0.2"
   }
 }
