@@ -1,4 +1,5 @@
-import { ExpressionRaw, FilterParser } from "./filter-parser";
+import { ExpressionRaw } from "./basic-grammar";
+import { FilterParser } from "./filter-parser";
 
 const exp1: ExpressionRaw = {
   and: [
@@ -27,8 +28,7 @@ const exp1: ExpressionRaw = {
 
 const exp2: ExpressionRaw = {
   equals: [
-    { or: [1, 2] },
-    { not: { not: { not: { not: true } } } },
+    { or: ["$dog", 2, { in: [1, [1, 2, 3, 4]] }] },
     {
       not: {
         and: [{ equals: [2, 3] }, { equals: [4, 5] }, { equals: [6, 7] }],
@@ -37,6 +37,6 @@ const exp2: ExpressionRaw = {
   ],
 };
 
-const exp = FilterParser.parser(exp2);
+const exp = FilterParser.parse(exp2);
 
 console.dir(exp, { depth: null });
