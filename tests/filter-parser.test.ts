@@ -1,7 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
-import { ExpressionRaw, FilterParser } from "../src/filter-parser";
-import { Expression } from "../src/types/expression";
-import { ComparisonExpression } from "../src/types/comparision-expression";
+import { FilterParser } from "../src/filter-parser";
+import { ExpressionRaw } from "../src/basic-grammar";
 
 describe("Test FilterParser to parser syntax to expression", () => {
   describe("Verify a expression", () => {
@@ -10,11 +9,9 @@ describe("Test FilterParser to parser syntax to expression", () => {
         equals: [{ or: [1, 2] }, { not: { not: true } }],
       };
 
-      const parserResult = FilterParser.parser(goodExpression);
+      const parserResult = FilterParser.parse(goodExpression);
 
-      expect(parserResult).toBeInstanceOf(Expression);
-      expect(parserResult).toBeInstanceOf(ComparisonExpression);
-      expect(JSON.parse(JSON.stringify(parserResult))).toMatchObject({
+      expect(parserResult).toMatchObject({
         kind: "ComparisonExpression",
         operator: "==",
         left: {
@@ -40,20 +37,23 @@ describe("Test FilterParser to parser syntax to expression", () => {
       const badExpression = {
         wrongKey: [1, 2],
       };
-      expect(() => FilterParser.parser(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
       );
     });
-  });
 
-  it;
+    it("with null", () => {
+      const badExpression = null as unknown as ExpressionRaw;
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
+    });
+  });
 
   describe("Verify a LOGIC expressions", () => {
     it("Empty arguments", () => {
       const badExpression = {
         and: [],
       };
-      expect(() => FilterParser.parser(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
     it("With only 1 arguments", () => {
@@ -62,23 +62,32 @@ describe("Test FilterParser to parser syntax to expression", () => {
           or: [true],
         },
       };
-      expect(() => FilterParser.parser(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
     it("Verify a bad expression with not keys 2", () => {
       const badExpression: ExpressionRaw = {
         and: [{}, 1],
       };
-      expect(() => FilterParser.parser(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
     it("Verify a bad expression with not keys 3", () => {
       const badExpression = {
         and: {},
       };
-      expect(() => FilterParser.parser(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
       );
+    });
+
+    it("with null", () => {
+      const badExpression = {
+        and: null,
+      };
+      expect(() =>
+        FilterParser.parse(badExpression as unknown as ExpressionRaw),
+      ).toThrow(SyntaxError);
     });
   });
 
@@ -87,21 +96,28 @@ describe("Test FilterParser to parser syntax to expression", () => {
       const badExpression: ExpressionRaw = {
         equals: [],
       };
-      expect(() => FilterParser.parser(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
     it("With only 1 argument", () => {
       const badExpression: ExpressionRaw = {
         equals: [1],
       };
-      expect(() => FilterParser.parser(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
+    });
+
+    it("With more two argument", () => {
+      const badExpression: ExpressionRaw = {
+        equals: [1, 2, 3, 4, 5, 6],
+      };
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
     it("With not keys", () => {
       const badExpression = {
         lt: {},
       };
-      expect(() => FilterParser.parser(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
       );
     });
@@ -110,7 +126,7 @@ describe("Test FilterParser to parser syntax to expression", () => {
       const badExpression = {
         gt: {},
       };
-      expect(() => FilterParser.parser(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
       );
     });
@@ -120,7 +136,7 @@ describe("Test FilterParser to parser syntax to expression", () => {
         diff: [() => {}, undefined],
       };
 
-      expect(() => FilterParser.parser(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
       );
     });
@@ -131,14 +147,14 @@ describe("Test FilterParser to parser syntax to expression", () => {
       const badExpression: ExpressionRaw = {
         not: {},
       };
-      expect(() => FilterParser.parser(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
     it("With not valid object", () => {
       const badExpression = {
         not: () => {},
       };
-      expect(() => FilterParser.parser(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
       );
     });
@@ -147,9 +163,88 @@ describe("Test FilterParser to parser syntax to expression", () => {
       const badExpression = {
         not: null,
       };
-      expect(() => FilterParser.parser(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
       );
+    });
+  });
+
+  describe("Verify a IN expression", () => {
+    it("With 1 argument", () => {
+      const badExpression = {
+        in: [1],
+      };
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
+
+    it("With invalid argument", () => {
+      const badExpression = {
+        in: [() => {}, null],
+      };
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
+
+    it("With invalid item", () => {
+      const badExpression = {
+        in: [true, [1, 2, 3, () => {}]],
+      };
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
+
+    it("With invalid value to find", () => {
+      const badExpression = {
+        in: [{ and: [true, true] }, [1, 2]],
+      };
+
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
+
+    it("With invalid elements", () => {
+      const badExpression = {
+        in: [1, [1, 2, { and: [true, true] }]],
+      };
+
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
+
+    it("Good Expression", () => {
+      const expression: ExpressionRaw = {
+        in: ["cat", ["dog", "cat"]],
+      };
+
+      const resultParse = FilterParser.parse(expression);
+      expect(resultParse).toMatchObject({
+        kind: "InExpression",
+        value: {
+          kind: "LiteralExpression",
+          value: "cat",
+        },
+      });
+    });
+  });
+
+  describe("Verify ID expression", () => {
+    const expression: ExpressionRaw = {
+      in: ["$cat", ["dog", "cat"]],
+    };
+
+    const resultParse = FilterParser.parse(expression);
+    expect(resultParse).toMatchObject({
+      kind: "InExpression",
+      value: {
+        kind: "IdExpression",
+        value: "$cat",
+      },
     });
   });
 });
