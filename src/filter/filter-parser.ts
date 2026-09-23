@@ -24,22 +24,27 @@ export type InputParser =
   | Partial<ConditionalRaw & ComparisonRaw & NotExpressionRaw & InExpressionRaw>
   | LiteralExpressionRaw;
 
-const mapRawComparisonOperator: Record<
-  ComparisonOperatorsRaw,
-  ComparisonOperator
-> = {
-  equals: "==",
-  diff: "!=",
-  gt: ">",
-  lt: "<",
-};
-
-const mapLogicOperator: Record<LogicOperatorRaw, LogicalOperator> = {
-  and: "&&",
-  or: "||",
-};
-
 export class FilterParser {
+  private static readonly mapRawComparisonOperator: Record<
+    ComparisonOperatorsRaw,
+    ComparisonOperator
+  > = {
+    equals: "==",
+    diff: "!=",
+    gt: ">",
+    lt: "<",
+    gte: ">=",
+    lte: "<=",
+  };
+
+  private static readonly mapLogicOperator: Record<
+    LogicOperatorRaw,
+    LogicalOperator
+  > = {
+    and: "&&",
+    or: "||",
+  };
+
   private constructor() {}
 
   static parse(input: InputParser): Expression {
@@ -67,9 +72,21 @@ export class FilterParser {
     const key = keys[0];
 
     // Comparison operators
-    if (key === "equals" || key === "diff" || key === "gt" || key === "lt") {
+    if (
+      key === "equals" ||
+      key === "diff" ||
+      key === "gt" ||
+      key === "lt" ||
+      key === "gte" ||
+      key === "lte"
+    ) {
       const expressionsRaw =
-        input["equals"] || input["diff"] || input["gt"] || input["lt"];
+        input["equals"] ||
+        input["diff"] ||
+        input["gt"] ||
+        input["lt"] ||
+        input["gte"] ||
+        input["lte"];
 
       if (!Array.isArray(expressionsRaw))
         throw new SyntaxError(
@@ -84,7 +101,7 @@ export class FilterParser {
 
       return this.buildComparisonExpression(
         this.parse(expressionsRaw[0]),
-        mapRawComparisonOperator[key],
+        this.mapRawComparisonOperator[key],
         this.parse(expressionsRaw[1]),
       );
     }
@@ -110,7 +127,7 @@ export class FilterParser {
       );
 
       return this.appendExpressions(expressions, (le, re) =>
-        this.buildLogicExpression(le, mapLogicOperator[key], re),
+        this.buildLogicExpression(le, this.mapLogicOperator[key], re),
       );
     }
 
