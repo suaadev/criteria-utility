@@ -27,8 +27,11 @@ describe("Test FilterParser to parser syntax to expression", () => {
           },
         },
         right: {
-          kind: "LiteralExpression",
-          value: true,
+          kind: "NotExpression",
+          expression: {
+            kind: "NotExpression",
+            expression: { kind: "LiteralExpression", value: true },
+          },
         },
       });
     });
