@@ -1,0 +1,35 @@
+interface ValuePaginate<T> {
+  page: number;
+  cursor: T | null;
+}
+
+export class Pagination<T = unknown> {
+  private constructor(readonly value: ValuePaginate<T>) {}
+
+  static byPage(page: number = 1) {
+    this.validatePage(page);
+    return new Pagination({
+      page,
+      cursor: null,
+    });
+  }
+
+  static byCursor<T = string>(cursor: T) {
+    return new Pagination<T>({
+      page: 1,
+      cursor,
+    });
+  }
+
+  static validatePage(page: number) {
+    if (page < 1) {
+      throw new Error("Page must be a integer greater or equal to 1");
+    }
+  }
+
+  toObjectPlain() {
+    return {
+      ...this.value,
+    };
+  }
+}

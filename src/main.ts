@@ -1,6 +1,7 @@
+import { Criteria } from "./criteria";
 import { ExpressionRaw } from "./filter/basic-grammar";
-import { FilterParser } from "./filter/filter-parser";
 import { PostgresSqlGenerator } from "./generators/postgres-sql.generator";
+import { Pagination } from "./pagination/pagination";
 
 const exp1: ExpressionRaw = {
   and: [
@@ -37,26 +38,42 @@ const exp1: ExpressionRaw = {
 };
 
 const exp2: ExpressionRaw = {
-  equals: [
+  and: [
     {
       or: [
         { equals: [1, 2] },
-        { equals: ["$cie11_title", "cat"] },
-        { not: { in: ["$id", [1, 2, 3, 3]] } },
+        { equals: ["$animal_type", "cat"] },
+        //  { not: { in: ["$id", [1, 2, 3, 3]] } },
+        { in: [3, [1, 2, 3, 3]] },
       ],
     },
+
     {
       not: {
-        and: [{ equals: [2, 3] }, { equals: ["1", 5] }, { equals: [6, 7] }],
+        and: [{ equals: [2, 3] }, { equals: ["1", 5] }, { equals: [6, 6] }],
       },
     },
   ],
 };
 
-const exp = FilterParser.parse(exp2);
+const exp3: ExpressionRaw = {
+  and: [{ equals: ["$test", 2] }, true, true],
+};
 
-console.dir(exp, { depth: null });
+const exp4: ExpressionRaw = {
+  and: [
+    { equals: ["$username", "pepito"] },
+    { equals: ["$email", "pepito"] },
+    { in: [3, [3, 4, 5, 6, 6]] },
+  ],
+};
 
-const sqlSyntax = PostgresSqlGenerator.generate(exp, "dcm");
+//console.dir(exp, { depth: null });
 
-console.log(sqlSyntax);
+const criteria = Criteria.build(exp4, Pagination.byPage(1), {
+  id: "ASC",
+});
+
+//criteria.limit = null;
+
+console.log(criteria.filterExpression);
