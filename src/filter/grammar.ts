@@ -1,6 +1,6 @@
 export type LiteralExpressionValids = number | string | boolean;
 
-export type LogicalOperator = "&&" | "&" | "||" | "|";
+export type LogicalOperator = "&&" | "||";
 
 export type ComparisonOperator = "==" | "!=" | ">" | "<" | ">=" | "<=";
 
