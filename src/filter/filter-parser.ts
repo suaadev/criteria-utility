@@ -142,10 +142,6 @@ export class FilterParser {
 
       const expression: Expression = this.parse(expressionsRaw);
 
-      if (expression.kind === "NotExpression") {
-        return expression.expression;
-      }
-
       return this.buildNotExpression(expression);
     }
 
