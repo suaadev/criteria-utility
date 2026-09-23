@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
-import { FilterParser } from "../src/filter-parser";
-import { ExpressionRaw } from "../src/basic-grammar";
+import { FilterParser } from "../src/filter/filter-parser";
+import { ExpressionRaw } from "../src/filter/basic-grammar";
 
 describe("Test FilterParser to parser syntax to expression", () => {
   describe("Verify a expression", () => {
