@@ -45,15 +45,24 @@ export class FilterParser {
     or: "||",
   };
 
+  private static readonly idExpressionRegex: RegExp =
+    /^\$[a-zA-Z_][a-zA-Z0-9_]*$/;
+
   private constructor() {}
 
   static parse(input: InputParser): Expression {
-    //Literal expressions
-
-    if (["string", "number", "boolean"].includes(typeof input)) {
-      if (typeof input === "string" && input.charAt(0) === "$") {
-        return this.buildIdExpression(input);
+    // Id expressions
+    if (typeof input === "string" && input.charAt(0) === "$") {
+      if (!this.idExpressionRegex.test(input)) {
+        throw new SyntaxError(
+          `The field or id expression provide is invalid: ${input}`,
+        );
       }
+      return this.buildIdExpression(input);
+    }
+
+    // Literal expressions
+    if (["string", "number", "boolean"].includes(typeof input)) {
       return this.buildLiteralExpression(input as LiteralExpressionRaw);
     }
 
@@ -80,13 +89,7 @@ export class FilterParser {
       key === "gte" ||
       key === "lte"
     ) {
-      const expressionsRaw =
-        input["equals"] ||
-        input["diff"] ||
-        input["gt"] ||
-        input["lt"] ||
-        input["gte"] ||
-        input["lte"];
+      const expressionsRaw = input[key];
 
       if (!Array.isArray(expressionsRaw))
         throw new SyntaxError(
@@ -109,7 +112,7 @@ export class FilterParser {
     // Logic operators
 
     if (key === "and" || key === "or") {
-      const expressionsRaw = input["and"] || input["or"];
+      const expressionsRaw = input[key];
 
       if (!Array.isArray(expressionsRaw))
         throw new SyntaxError(
@@ -187,6 +190,7 @@ export class FilterParser {
 
     throw new SyntaxError("The input expression is invalid");
   }
+
   private static buildLiteralExpression(
     value: LiteralExpressionValids,
   ): LiteralExpression {
