@@ -237,17 +237,54 @@ describe("Test FilterParser to parser syntax to expression", () => {
   });
 
   describe("Verify ID expression", () => {
-    const expression: ExpressionRaw = {
-      in: ["$cat", ["dog", "cat"]],
-    };
+    it("With valid syntaxis 1", () => {
+      const expression: ExpressionRaw = {
+        in: ["$cat", ["dog", "cat"]],
+      };
 
-    const resultParse = FilterParser.parse(expression);
-    expect(resultParse).toMatchObject({
-      kind: "InExpression",
-      value: {
-        kind: "IdExpression",
-        value: "$cat",
-      },
+      const resultParse = FilterParser.parse(expression);
+      expect(resultParse).toMatchObject({
+        kind: "InExpression",
+        value: {
+          kind: "IdExpression",
+          value: "$cat",
+        },
+      });
+    });
+
+    it("With valid syntaxis 2", () => {
+      const expression: ExpressionRaw = {
+        equals: ["$_sd_a_3_4", 1],
+      };
+      const resultParse = FilterParser.parse(expression);
+
+      expect(resultParse).toMatchObject({
+        kind: "ComparisonExpression",
+      });
+    });
+
+    it("With invalid syntaxis 1", () => {
+      const expression: ExpressionRaw = {
+        equals: ["$", 1],
+      };
+
+      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+    });
+
+    it("With invalid syntaxis 2", () => {
+      const expression: ExpressionRaw = {
+        equals: ["$123sda", 1],
+      };
+
+      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+    });
+
+    it("With invalid syntaxis 3", () => {
+      const expression: ExpressionRaw = {
+        equals: ["$s&?da34", 1],
+      };
+
+      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
     });
   });
 });
