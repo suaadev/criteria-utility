@@ -1,8 +1,9 @@
 import {
+  ComparisonExpressionRightRaw,
   ComparisonOperatorsRaw,
-  ComparisonRaw,
   ConditionalRaw,
-  InExpressionRaw,
+  ExpressionRaw,
+  InExpressionRightRaw,
   LiteralExpressionRaw,
   LogicOperatorRaw,
   NotExpressionRaw,
@@ -16,13 +17,9 @@ import {
   LogicalOperator,
   LogicExpression,
   NotExpression,
-  IdExpression,
+  FieldExpression,
   InExpression,
 } from "./grammar";
-
-export type InputParser =
-  | Partial<ConditionalRaw & ComparisonRaw & NotExpressionRaw & InExpressionRaw>
-  | LiteralExpressionRaw;
 
 export class FilterParser {
   private static readonly mapRawComparisonOperator: Record<
@@ -50,19 +47,22 @@ export class FilterParser {
 
   private constructor() {}
 
-  static parse(input: InputParser): Expression {
-    // Id expressions
+  static parse<T>(input: ExpressionRaw<T> = null): Expression {
+    // Field expressions
     if (typeof input === "string" && input.charAt(0) === "$") {
       if (!this.idExpressionRegex.test(input)) {
         throw new SyntaxError(
           `The field or id expression provide is invalid: ${input}`,
         );
       }
-      return this.buildIdExpression(input);
+      return this.buildFieldExpression(input.slice(1));
     }
 
     // Literal expressions
-    if (["string", "number", "boolean"].includes(typeof input)) {
+    if (
+      input === null ||
+      ["string", "number", "boolean"].includes(typeof input)
+    ) {
       return this.buildLiteralExpression(input as LiteralExpressionRaw);
     }
 
@@ -80,39 +80,10 @@ export class FilterParser {
 
     const key = keys[0];
 
-    // Comparison operators
-    if (
-      key === "equals" ||
-      key === "diff" ||
-      key === "gt" ||
-      key === "lt" ||
-      key === "gte" ||
-      key === "lte"
-    ) {
-      const expressionsRaw = input[key];
-
-      if (!Array.isArray(expressionsRaw))
-        throw new SyntaxError(
-          "The Comparison expression must be a array with expressions.",
-        );
-
-      if (expressionsRaw.length != 2) {
-        throw new SyntaxError(
-          "The Comparison expression must contain two arguments.",
-        );
-      }
-
-      return this.buildComparisonExpression(
-        this.parse(expressionsRaw[0]),
-        this.mapRawComparisonOperator[key],
-        this.parse(expressionsRaw[1]),
-      );
-    }
-
     // Logic operators
 
     if (key === "and" || key === "or") {
-      const expressionsRaw = input[key];
+      const expressionsRaw = (input as ConditionalRaw<T>)[key];
 
       if (!Array.isArray(expressionsRaw))
         throw new SyntaxError(
@@ -137,7 +108,7 @@ export class FilterParser {
     // Not expression
 
     if (key === "not") {
-      const expressionsRaw = input["not"];
+      const expressionsRaw = (input as NotExpressionRaw<T>)["not"];
 
       if (!expressionsRaw) {
         throw new SyntaxError("The NOT expressions is invalid");
@@ -148,44 +119,64 @@ export class FilterParser {
       return this.buildNotExpression(expression);
     }
 
-    // In expression
-    if (key === "in") {
-      const expressionsRaw = input["in"];
+    const field = key as keyof T;
 
-      if (
-        !Array.isArray(expressionsRaw) ||
-        expressionsRaw.length !== 2 ||
-        !Array.isArray(expressionsRaw[1])
-      ) {
+    const operation = (
+      input as Record<
+        keyof T,
+        Partial<InExpressionRightRaw & ComparisonExpressionRightRaw<T>>
+      >
+    )[field];
+
+    const keysOperation = Object.keys(operation);
+
+    if (keysOperation.length !== 1) {
+      throw new SyntaxError("The field require a operand");
+    }
+
+    const operator: string = keysOperation[0];
+
+    // Comparison operators
+    if (
+      operator === "equals" ||
+      operator === "diff" ||
+      operator === "gt" ||
+      operator === "lt" ||
+      operator === "gte" ||
+      operator === "lte"
+    ) {
+      const expressionsRaw = operation[operator];
+
+      return this.buildComparisonExpression(
+        this.buildFieldExpression(key),
+        this.mapRawComparisonOperator[operator],
+        this.parse(expressionsRaw ?? null),
+      );
+    }
+
+    // In expression
+    if (operator === "in") {
+      const expressionsRaw = operation[operator];
+
+      if (!Array.isArray(expressionsRaw) || expressionsRaw.length < 1) {
         throw new SyntaxError(
           "The IN expression must contain an expression and an array of literals.",
         );
       }
 
-      const expression1: Expression = this.parse(expressionsRaw[0]);
+      const items: LiteralExpression[] = [];
 
-      if (
-        expression1.kind != "IdExpression" &&
-        expression1.kind != "LiteralExpression"
-      ) {
-        throw new SyntaxError(
-          "The IN expressions require a literalExpression or IdExpression with value",
-        );
-      }
-
-      const expression2: LiteralExpression[] = [];
-
-      for (const element of expressionsRaw[1]) {
+      for (const element of expressionsRaw) {
         const expression = this.parse(element);
         if (expression.kind != "LiteralExpression") {
           throw new SyntaxError(
             "The IN expressions require a literalExpression or IdExpression with value",
           );
         }
-        expression2.push(expression);
+        items.push(expression);
       }
 
-      return this.buildInExpression(expression1, expression2);
+      return this.buildInExpression(this.buildFieldExpression(key), items);
     }
 
     throw new SyntaxError("The input expression is invalid");
@@ -218,14 +209,14 @@ export class FilterParser {
   }
 
   private static buildInExpression(
-    value: LiteralExpression | IdExpression,
+    value: LiteralExpression | FieldExpression,
     expression: LiteralExpression[],
   ): InExpression {
     return { kind: "InExpression", expression, value };
   }
 
-  private static buildIdExpression(value: string): IdExpression {
-    return { kind: "IdExpression", value };
+  private static buildFieldExpression(value: string): FieldExpression {
+    return { kind: "FieldExpression", value };
   }
 
   private static appendExpressions(

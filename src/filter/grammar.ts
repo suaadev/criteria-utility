@@ -1,4 +1,4 @@
-export type LiteralExpressionValids = number | string | boolean;
+export type LiteralExpressionValids = number | string | boolean | null;
 
 export type LogicalOperator = "&&" | "||";
 
@@ -21,14 +21,14 @@ export type ComparisonExpression = {
   right: Expression;
 };
 
-export type IdExpression = {
-  kind: "IdExpression";
+export type FieldExpression = {
+  kind: "FieldExpression";
   value: string;
 };
 
 export type InExpression = {
   kind: "InExpression";
-  value: LiteralExpression | IdExpression;
+  value: LiteralExpression | FieldExpression;
   expression: LiteralExpression[];
 };
 
@@ -41,7 +41,7 @@ export type LogicExpression = {
 
 export type Expression =
   | LiteralExpression
-  | IdExpression
+  | FieldExpression
   | LogicExpression
   | ComparisonExpression
   | InExpression

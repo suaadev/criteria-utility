@@ -1,5 +1,4 @@
 import { ExpressionRaw } from "./filter/basic-grammar";
-import { FilterOptimizer } from "./filter/filter-optimizer";
 import { FilterParser } from "./filter/filter-parser";
 import { Expression } from "./filter/grammar";
 import { Pagination } from "./pagination/pagination";
@@ -18,14 +17,14 @@ export class Criteria {
     this.validateLimit(this.limit ?? 1);
   }
 
-  static build(
-    filterExpression?: ExpressionRaw | null,
+  static build<T>(
+    filterExpression?: ExpressionRaw<T> | null,
     pagination?: Pagination | null,
     orderBy?: [string, Sort][] | null,
     limit?: number | null,
   ) {
     const expressionParsed = filterExpression
-      ? FilterOptimizer.optimize(FilterParser.parse(filterExpression))
+      ? FilterParser.parse(filterExpression)
       : null;
 
     return new Criteria(
