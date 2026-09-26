@@ -1,5 +1,5 @@
-interface ValuePaginate<T> {
-  page: number;
+export interface ValuePaginate<T> {
+  page: number | null;
   cursor: T | null;
 }
 
@@ -16,7 +16,7 @@ export class Pagination<T = unknown> {
 
   static byCursor<T = string>(cursor: T) {
     return new Pagination<T>({
-      page: 1,
+      page: null,
       cursor,
     });
   }
@@ -28,8 +28,6 @@ export class Pagination<T = unknown> {
   }
 
   toObjectPlain() {
-    return {
-      ...this.value,
-    };
+    return this.value;
   }
 }

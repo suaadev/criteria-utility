@@ -1,79 +1,45 @@
 import { Criteria } from "./criteria";
 import { ExpressionRaw } from "./filter/basic-grammar";
+import { CursorSerializer } from "./generators/cursor-serializer";
 import { PostgresSqlGenerator } from "./generators/postgres-sql.generator";
 import { Pagination } from "./pagination/pagination";
 
-const exp1: ExpressionRaw = {
-  and: [
-    {
-      not: {
-        and: [
-          {
-            gt: [1, 2],
-          },
-          {
-            gt: [1, 2],
-          },
-        ],
-      },
-    },
-    false,
-    {
-      or: [true, { and: [{ gt: [1, 2] }, { gt: [1, 2] }] }],
-    },
-    {
-      not: {
-        not: {
-          not: {
-            or: [
-              { and: [{ equals: [1, 2] }, { equals: [1, 2] }] },
-              true,
-              false,
-            ],
-          },
-        },
-      },
-    },
-  ],
-};
-
-const exp2: ExpressionRaw = {
+const exp: ExpressionRaw = {
   and: [
     {
       or: [
-        { equals: [1, 2] },
-        { equals: ["$animal_type", "cat"] },
-        //  { not: { in: ["$id", [1, 2, 3, 3]] } },
-        { in: [3, [1, 2, 3, 3]] },
+        { equals: ["$username", "pepito"] },
+        { not: { equals: ["$email", "pepito@example.com"] } },
+        false,
+        { in: ["$id", [23, 3, 3, 3]] },
       ],
     },
-
-    {
-      not: {
-        and: [{ equals: [2, 3] }, { equals: ["1", 5] }, { equals: [6, 6] }],
-      },
-    },
+    { gt: ["$age", 18] },
   ],
 };
 
-const exp3: ExpressionRaw = {
-  and: [{ equals: ["$test", 2] }, true, true],
-};
+// The cursor is something like this, the cursor is builder in infrastructure layers like repositories implementations
 
-const exp4: ExpressionRaw = {
-  and: [
-    { equals: ["$username", "pepito"] },
-    { equals: ["$email", "pepito"] },
-    { in: [3, [3, 4, 5, 6, 6]] },
+const cursor: string = CursorSerializer.encode(
+  {
+    id: 10,
+    name: "ddavivss",
+    createdAt: "2026-09-24 11:56:26.472 -0500",
+  },
+  ["createdAt", "id"],
+  "ASC",
+);
+
+const criteria = Criteria.build(
+  exp,
+  Pagination.byCursor(cursor),
+  [
+    ["id", "ASC"],
+    ["name", "DESC"],
   ],
-};
+  15,
+);
 
-//console.dir(exp, { depth: null });
+const sql = PostgresSqlGenerator.fromCriteria(criteria, "us");
 
-const criteria = Criteria.build(exp4, Pagination.byPage(1), {
-  id: "ASC",
-});
-
-//criteria.limit = null;
-
-console.log(criteria.filterExpression);
+console.log(sql);

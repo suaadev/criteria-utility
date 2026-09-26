@@ -6,35 +6,33 @@ import { Pagination } from "./pagination/pagination";
 
 export type Sort = "ASC" | "DESC";
 
-export type OrderBy = Record<string, Sort>;
+export type OrderBy = Map<string, Sort>;
 
 export class Criteria {
-  static DEFAULT_LIMIT: number = 15;
-
   private constructor(
-    readonly filterExpression: Expression,
+    readonly filterExpression: Expression | null,
     public pagination: Pagination | null,
-    public orderBy: OrderBy | null,
+    public orderBy: OrderBy,
     private limit_: number | null,
   ) {
-    this.validateLimit(this.limit ?? Criteria.DEFAULT_LIMIT);
+    this.validateLimit(this.limit ?? 1);
   }
 
   static build(
-    filterExpression: ExpressionRaw,
+    filterExpression?: ExpressionRaw | null,
     pagination?: Pagination | null,
-    orderBy?: OrderBy | null,
-    limit: number | null = Criteria.DEFAULT_LIMIT,
+    orderBy?: [string, Sort][] | null,
+    limit?: number | null,
   ) {
-    const expressionParsed = FilterOptimizer.optimize(
-      FilterParser.parse(filterExpression),
-    );
+    const expressionParsed = filterExpression
+      ? FilterOptimizer.optimize(FilterParser.parse(filterExpression))
+      : null;
 
     return new Criteria(
       expressionParsed,
       pagination ?? null,
-      orderBy ?? null,
-      limit,
+      new Map(orderBy ?? []),
+      limit ?? null,
     );
   }
 
@@ -45,7 +43,7 @@ export class Criteria {
   }
 
   set limit(limit: number | null) {
-    this.validateLimit(limit ?? Criteria.DEFAULT_LIMIT);
+    this.validateLimit(limit ?? 1);
     this.limit_ = limit;
   }
 
@@ -57,7 +55,7 @@ export class Criteria {
     return {
       filterExpression: this.filterExpression,
       pagination: this.pagination?.toObjectPlain() ?? null,
-      orderBy: this.orderBy,
+      orderBy: Array.from(this.orderBy.entries()),
       limit: this.limit,
     };
   }
