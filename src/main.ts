@@ -1,21 +1,16 @@
 import { Criteria } from "./criteria";
 import { ExpressionRaw } from "./filter/basic-grammar";
+import { FilterParser } from "./filter/filter-parser";
 import { CursorSerializer } from "./generators/cursor-serializer";
 import { PostgresSqlGenerator } from "./generators/postgres-sql.generator";
 import { Pagination } from "./pagination/pagination";
 
-const exp: ExpressionRaw = {
-  and: [
-    {
-      or: [
-        { equals: ["$username", "pepito"] },
-        { not: { equals: ["$email", "pepito@example.com"] } },
-        false,
-        { in: ["$id", [23, 3, 3, 3]] },
-      ],
-    },
-    { gt: ["$age", 18] },
-  ],
+type User = {
+  username: string;
+  email: string;
+  password: string;
+  age: number;
+  createdAt: string;
 };
 
 // The cursor is something like this, the cursor is builder in infrastructure layers like repositories implementations
@@ -30,8 +25,15 @@ const cursor: string = CursorSerializer.encode(
   "ASC",
 );
 
-const criteria = Criteria.build(
-  exp,
+const criteria = Criteria.build<User>(
+  {
+    and: [
+      { not: { age: { in: [1, 2, 3, 3, 4] } } },
+      {
+        and: [{ username: { diff: null } }, { username: { equals: "jazzz" } }],
+      },
+    ],
+  },
   Pagination.byCursor(cursor),
   [
     ["id", "ASC"],

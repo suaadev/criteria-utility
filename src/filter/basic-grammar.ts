@@ -8,33 +8,35 @@ export type ComparisonOperatorsRaw =
   | "gte"
   | "lte";
 
-export type LiteralExpressionRaw = number | string | boolean;
+export type LiteralExpressionRaw = number | boolean | null | string;
 
-export type IdExpressionRaw = string;
-
-export type ComparisonRaw = Partial<{
-  [key in ComparisonOperatorsRaw]: (ExpressionRaw | LiteralExpressionRaw)[];
+export type ComparisonExpressionRightRaw<T> = Partial<{
+  [K_ in ComparisonOperatorsRaw]: ExpressionRaw<T>;
 }>;
 
-export type ConditionalRaw = Partial<{
-  [Key in LogicOperatorRaw]: (LiteralExpressionRaw | ExpressionRaw)[];
+export type ComparisonExpressionRaw<T> = Partial<{
+  [Key in keyof T]: ComparisonExpressionRightRaw<T>;
 }>;
 
-export type InExpressionRaw = Partial<{
-  in: [LiteralExpressionRaw, LiteralExpressionRaw[]];
-}>;
-
-export type NotExpressionRaw = {
-  not:
-    | ConditionalRaw
-    | ComparisonRaw
-    | LiteralExpressionRaw
-    | NotExpressionRaw
-    | InExpressionRaw;
+export type InExpressionRightRaw = {
+  in: LiteralExpressionRaw[];
 };
 
-export type ExpressionRaw =
-  | NotExpressionRaw
-  | ConditionalRaw
-  | ComparisonRaw
-  | InExpressionRaw;
+export type InExpressionRaw<T> = Partial<{
+  [Key in keyof T]: InExpressionRightRaw;
+}>;
+
+export type ConditionalRaw<T> = Partial<{
+  [Key in LogicOperatorRaw]: ExpressionRaw<T>[];
+}>;
+
+export type NotExpressionRaw<T> = {
+  not: ExpressionRaw<T>;
+};
+
+export type ExpressionRaw<T = Record<string, unknown>> =
+  | NotExpressionRaw<T>
+  | ConditionalRaw<T>
+  | ComparisonExpressionRaw<T>
+  | InExpressionRaw<T>
+  | LiteralExpressionRaw;

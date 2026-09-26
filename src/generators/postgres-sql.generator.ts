@@ -102,8 +102,8 @@ export class PostgresSqlGenerator {
       return `$${valuesParams.length}`;
     }
 
-    if (expression.kind === "IdExpression") {
-      return this.buildFieldWithAlias(expression.value.slice(1), alias);
+    if (expression.kind === "FieldExpression") {
+      return this.buildFieldWithAlias(expression.value, alias);
     }
 
     if (expression.kind === "ComparisonExpression") {
