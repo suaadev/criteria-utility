@@ -1,4 +1,4 @@
-import { Criteria } from "../criteria";
+import { Criteria, Sort } from "../criteria";
 import {
   ComparisonOperator,
   Expression,
@@ -48,24 +48,47 @@ export class PostgresSqlGenerator {
 
     if (Number.isFinite(limit)) {
       if (pagination && typeof pagination.cursor === "string") {
-        const { fields, sort } = CursorSerializer.decode(pagination.cursor);
+        const fields = CursorSerializer.decode(pagination.cursor);
 
         orderByFields = [];
-        const valuesParamsPagination: string[] = [];
-        const fieldsFormatted: string[] = [];
 
-        for (const [field, value] of fields) {
+        const fieldsWithParams: [string, string, string][] = [];
+
+        for (const [fieldName, operator, value] of fields) {
+          const fieldNameWithAlias = this.buildFieldWithAlias(fieldName, alias);
+
           valuesParams.push(value);
-          valuesParamsPagination.push(`$${valuesParams.length}`);
-          fieldsFormatted.push(this.buildFieldWithAlias(field, alias));
+
+          fieldsWithParams.push([
+            fieldNameWithAlias,
+            operator,
+            `$${valuesParams.length}`,
+          ]);
+
           orderByFields.push(
-            `${this.buildFieldWithAlias(field, alias)} ${sort}`,
+            `${fieldNameWithAlias} ${this.resolveSort(operator)}`,
           );
         }
 
-        whereStatments.push(
-          `(${fieldsFormatted.join(", ")}) ${sort === "DESC" ? "<" : ">"} (${valuesParamsPagination.join(", ")})`,
-        );
+        const lastCombination: [string, string, string][] = [
+          fieldsWithParams[0],
+        ];
+
+        const output: string[] = [fieldsWithParams[0].join(" ")];
+
+        for (const currentField of fieldsWithParams) {
+          const lastField = lastCombination[lastCombination.length - 1];
+
+          lastField[1] = "=";
+
+          lastCombination.push(currentField);
+
+          output.push(
+            `(${lastCombination.map((m) => m.join(" ")).join(" AND ")})`,
+          );
+        }
+
+        whereStatments.push(`(${output.join(" OR ")})`);
       } else if (pagination && Number.isFinite(pagination.page)) {
         offsetStatement = `OFFSET ${(limit as number) * ((pagination.page as number) - 1)}`;
       }
@@ -86,6 +109,10 @@ export class PostgresSqlGenerator {
       sql: outputSql,
       values: valuesParams,
     };
+  }
+
+  private static resolveSort(operator: string): Sort {
+    return operator == ">" ? "ASC" : "DESC";
   }
 
   private static buildFieldWithAlias(field: unknown, alias: string = "") {
@@ -170,6 +197,7 @@ export class PostgresSqlGenerator {
         alias,
         valuesParams,
       );
+
       return `(NOT ${expr})`;
     }
 
