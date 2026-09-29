@@ -1,30 +1,10 @@
-import {
-  ComparisonExpressionRightRaw,
-  ComparisonOperatorsRaw,
-  ConditionalRaw,
-  ExpressionRaw,
-  InExpressionRightRaw,
-  LiteralExpressionRaw,
-  LogicOperatorRaw,
-  NotExpressionRaw,
-} from "./basic-grammar";
-import {
-  LiteralExpression,
-  LiteralExpressionValids,
-  Expression,
-  ComparisonOperator,
-  ComparisonExpression,
-  LogicalOperator,
-  LogicExpression,
-  NotExpression,
-  FieldExpression,
-  InExpression,
-} from "./grammar";
+import * as basicGrammar from "./basic-grammar";
+import * as grammar from "./grammar";
 
 export class FilterParser {
   private static readonly mapRawComparisonOperator: Record<
-    ComparisonOperatorsRaw,
-    ComparisonOperator
+    basicGrammar.ComparisonOperatorsRaw,
+    grammar.ComparisonOperator
   > = {
     equals: "==",
     diff: "!=",
@@ -35,8 +15,8 @@ export class FilterParser {
   };
 
   private static readonly mapLogicOperator: Record<
-    LogicOperatorRaw,
-    LogicalOperator
+    basicGrammar.LogicOperatorRaw,
+    grammar.LogicalOperator
   > = {
     and: "&&",
     or: "||",
@@ -47,7 +27,9 @@ export class FilterParser {
 
   private constructor() {}
 
-  static parse<T>(input: ExpressionRaw<T> = null): Expression {
+  static parse<T>(
+    input: basicGrammar.ExpressionRaw<T> = null,
+  ): grammar.Expression {
     // Field expressions
     if (typeof input === "string" && input.charAt(0) === "$") {
       if (!this.idExpressionRegex.test(input)) {
@@ -63,7 +45,9 @@ export class FilterParser {
       input === null ||
       ["string", "number", "boolean"].includes(typeof input)
     ) {
-      return this.buildLiteralExpression(input as LiteralExpressionRaw);
+      return this.buildLiteralExpression(
+        input as basicGrammar.LiteralExpressionRaw,
+      );
     }
 
     if (!input || typeof input != "object") {
@@ -83,7 +67,7 @@ export class FilterParser {
     // Logic operators
 
     if (key === "and" || key === "or") {
-      const expressionsRaw = (input as ConditionalRaw<T>)[key];
+      const expressionsRaw = (input as basicGrammar.ConditionalRaw<T>)[key];
 
       if (!Array.isArray(expressionsRaw))
         throw new SyntaxError(
@@ -96,7 +80,7 @@ export class FilterParser {
         );
       }
 
-      const expressions: Expression[] = expressionsRaw.map((e) =>
+      const expressions: grammar.Expression[] = expressionsRaw.map((e) =>
         this.parse(e),
       );
 
@@ -108,13 +92,13 @@ export class FilterParser {
     // Not expression
 
     if (key === "not") {
-      const expressionsRaw = (input as NotExpressionRaw<T>)["not"];
+      const expressionsRaw = (input as basicGrammar.NotExpressionRaw<T>)["not"];
 
       if (!expressionsRaw) {
         throw new SyntaxError("The NOT expressions is invalid");
       }
 
-      const expression: Expression = this.parse(expressionsRaw);
+      const expression: grammar.Expression = this.parse(expressionsRaw);
 
       return this.buildNotExpression(expression);
     }
@@ -124,7 +108,10 @@ export class FilterParser {
     const operation = (
       input as Record<
         keyof T,
-        Partial<InExpressionRightRaw & ComparisonExpressionRightRaw<T>>
+        Partial<
+          basicGrammar.InExpressionRightRaw &
+            basicGrammar.ComparisonExpressionRightRaw<T>
+        >
       >
     )[field];
 
@@ -164,7 +151,7 @@ export class FilterParser {
         );
       }
 
-      const items: LiteralExpression[] = [];
+      const items: grammar.LiteralExpression[] = [];
 
       for (const element of expressionsRaw) {
         const expression = this.parse(element);
@@ -183,50 +170,52 @@ export class FilterParser {
   }
 
   private static buildLiteralExpression(
-    value: LiteralExpressionValids,
-  ): LiteralExpression {
+    value: grammar.LiteralExpressionValids,
+  ): grammar.LiteralExpression {
     return { kind: "LiteralExpression", value };
   }
 
   private static buildComparisonExpression(
-    left: Expression,
-    operator: ComparisonOperator,
-    right: Expression,
-  ): ComparisonExpression {
+    left: grammar.Expression,
+    operator: grammar.ComparisonOperator,
+    right: grammar.Expression,
+  ): grammar.ComparisonExpression {
     return { kind: "ComparisonExpression", left, operator, right };
   }
 
   private static buildLogicExpression(
-    left: Expression,
-    operator: LogicalOperator,
-    right: Expression,
-  ): LogicExpression {
+    left: grammar.Expression,
+    operator: grammar.LogicalOperator,
+    right: grammar.Expression,
+  ): grammar.LogicExpression {
     return { kind: "LogicExpression", left, operator, right };
   }
 
-  private static buildNotExpression(expression: Expression): NotExpression {
+  private static buildNotExpression(
+    expression: grammar.Expression,
+  ): grammar.NotExpression {
     return { kind: "NotExpression", expression };
   }
 
   private static buildInExpression(
-    value: LiteralExpression | FieldExpression,
-    expression: LiteralExpression[],
-  ): InExpression {
+    value: grammar.LiteralExpression | grammar.FieldExpression,
+    expression: grammar.LiteralExpression[],
+  ): grammar.InExpression {
     return { kind: "InExpression", expression, value };
   }
 
-  private static buildFieldExpression(value: string): FieldExpression {
+  private static buildFieldExpression(value: string): grammar.FieldExpression {
     return { kind: "FieldExpression", value };
   }
 
   private static appendExpressions(
-    expressionsToAppend: Expression[],
+    expressionsToAppend: grammar.Expression[],
     builder: (
-      lastExpression: Expression,
-      currentExpression: Expression,
-    ) => Expression,
+      lastExpression: grammar.Expression,
+      currentExpression: grammar.Expression,
+    ) => grammar.Expression,
   ) {
-    let lastExpression: Expression = expressionsToAppend[0];
+    let lastExpression: grammar.Expression = expressionsToAppend[0];
 
     for (let i = 1; i < expressionsToAppend.length; i++) {
       const expressionToAppend = expressionsToAppend[i];

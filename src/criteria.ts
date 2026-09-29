@@ -1,7 +1,7 @@
 import { ExpressionRaw } from "./filter/basic-grammar";
 import { FilterParser } from "./filter/filter-parser";
 import { Expression } from "./filter/grammar";
-import { Pagination } from "./pagination/pagination";
+import Pagination from "./pagination/pagination";
 
 export type Sort = "ASC" | "DESC";
 

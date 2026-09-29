@@ -2,9 +2,9 @@ type OperatorCondition = "<" | ">";
 
 type CursorSort = "ASC" | "DESC";
 
-export type CursorPayload = [string, OperatorCondition, unknown][];
+type CursorPayload = [string, OperatorCondition, unknown][];
 
-export class CursorSerializer {
+export default class CursorSerializer {
   private static resolveOperator(sort: CursorSort): OperatorCondition {
     return sort === "ASC" ? ">" : "<";
   }
