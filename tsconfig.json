@@ -2,7 +2,7 @@
     "compilerOptions": {
         "module": "commonjs",
         "rootDir": ".",
-        "outDir": "./dist",
+        "outDir": "./lib",
         "noImplicitAny": true,
         "skipLibCheck": true,
         "types": [
