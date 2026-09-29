@@ -1,6 +1,4 @@
 import { Criteria } from "./criteria";
-import { ExpressionRaw } from "./filter/basic-grammar";
-import { FilterParser } from "./filter/filter-parser";
 import { CursorSerializer } from "./generators/cursor-serializer";
 import { PostgresSqlGenerator } from "./generators/postgres-sql.generator";
 import { Pagination } from "./pagination/pagination";
@@ -18,26 +16,27 @@ type User = {
 const cursor: string = CursorSerializer.encode(
   {
     id: 10,
-    name: "ddavivss",
+    username: "ddavivss",
     createdAt: "2026-09-24 11:56:26.472 -0500",
   },
-  ["createdAt", "id"],
-  "ASC",
+  [
+    ["createdAt", "DESC"],
+    ["username", "ASC"],
+    ["id", "DESC"],
+  ],
 );
 
 const criteria = Criteria.build<User>(
   {
     and: [
-      { not: { age: { in: [1, 2, 3, 3, 4] } } },
-      {
-        and: [{ username: { diff: null } }, { username: { equals: "jazzz" } }],
-      },
+      { not: { age: { in: [1, 2, 3, 4] } } },
+      { username: { equals: "jazzz" } },
     ],
   },
   Pagination.byCursor(cursor),
   [
     ["id", "ASC"],
-    ["name", "DESC"],
+    ["username", "DESC"],
   ],
   15,
 );

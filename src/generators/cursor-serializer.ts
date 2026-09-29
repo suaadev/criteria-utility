@@ -1,32 +1,36 @@
-export type CursorSort = "ASC" | "DESC";
+type OperatorCondition = "<" | ">";
 
-export interface CursorPayload {
-  fields: [string, unknown][];
-  sort: CursorSort;
-}
+type CursorSort = "ASC" | "DESC";
+
+export type CursorPayload = [string, OperatorCondition, unknown][];
 
 export class CursorSerializer {
-  static encode<T>(
-    object: T,
-    fieldsToPivot: (keyof T)[],
-    sort: CursorSort,
-  ): string {
-    const cursorPayload: CursorPayload = {
-      fields: [],
-      sort,
-    };
+  private static resolveOperator(sort: CursorSort): OperatorCondition {
+    return sort === "ASC" ? ">" : "<";
+  }
 
-    for (const field of fieldsToPivot) {
+  static encode<T>(object: T, fieldsToPivot: [keyof T, CursorSort][]): string {
+    const cursorPayload: Map<string, [string, OperatorCondition, unknown]> =
+      new Map();
+
+    for (const [field, sort] of fieldsToPivot) {
       const value = object[field];
       if (value === null || value === undefined) {
         throw new Error(
           `The value for field ${field.toString()} is invalid, received:${value}`,
         );
       }
-      cursorPayload.fields.push([field.toString(), value]);
+
+      cursorPayload.set(field.toString(), [
+        field.toString(),
+        this.resolveOperator(sort),
+        value,
+      ]);
     }
 
-    const cursorPayloadInJSONFormat: string = JSON.stringify(cursorPayload);
+    const cursorPayloadInJSONFormat: string = JSON.stringify(
+      Array.from(cursorPayload.values()),
+    );
 
     const cursorInBase64: string = Buffer.from(
       cursorPayloadInJSONFormat,
