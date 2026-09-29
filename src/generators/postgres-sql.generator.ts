@@ -1,14 +1,10 @@
 import { Criteria, Sort } from "../criteria";
-import {
-  ComparisonOperator,
-  Expression,
-  LogicalOperator,
-} from "../filter/grammar";
-import { CursorSerializer } from "./cursor-serializer";
+import * as grammar from "../filter/grammar";
+import CursorSerializer from "./cursor-serializer";
 
-export class PostgresSqlGenerator {
+export default class PostgresSqlGenerator {
   private static mapComparisonOperatorsToSql: Record<
-    ComparisonOperator,
+    grammar.ComparisonOperator,
     string
   > = {
     "==": "=",
@@ -19,7 +15,10 @@ export class PostgresSqlGenerator {
     ">": ">",
   };
 
-  private static mapLogicperatorsToSql: Record<LogicalOperator, string> = {
+  private static mapLogicperatorsToSql: Record<
+    grammar.LogicalOperator,
+    string
+  > = {
     "&&": "AND",
     "||": "OR",
   };
@@ -120,7 +119,7 @@ export class PostgresSqlGenerator {
   }
 
   private static expressionToSql(
-    expression: Expression,
+    expression: grammar.Expression,
     alias: string = "",
     valuesParams: unknown[],
   ): string {

@@ -5,11 +5,21 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
+  "main": "lib/index.ts",
   "scripts": {
-    "start": "npx tsc && node dist/src/main.js",
+    "start": "npx tsx usage.ts",
     "compile": "npx tsc",
     "test": "jest --verbose --coverage"
   },
+  "exports": {
+    ".": "./lib/index.js"
+  },
+  "files": [
+    "lib",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "devDependencies": {
     "@jest/globals": "^30.5.1",
     "@swc/core": "^1.16.2",

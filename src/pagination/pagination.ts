@@ -1,9 +1,9 @@
-export interface ValuePaginate<T> {
+interface ValuePaginate<T> {
   page: number | null;
   cursor: T | null;
 }
 
-export class Pagination<T = unknown> {
+export default class Pagination<T = unknown> {
   private constructor(readonly value: ValuePaginate<T>) {}
 
   static byPage(page: number = 1) {
