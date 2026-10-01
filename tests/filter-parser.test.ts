@@ -197,6 +197,15 @@ describe("FilterParser", () => {
         right: { kind: "FieldExpression", value: "endDate" },
       });
     });
+
+    it("should throw SyntaxError when a field is not a valid operator", () => {
+      const badExpression = {
+        age: { badOperator: {} },
+      };
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
   });
 
   describe("not expressions", () => {
