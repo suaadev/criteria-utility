@@ -23,6 +23,14 @@ export default class PostgresSqlGenerator {
     "||": "OR",
   };
 
+  private static validsExpInLogicExp = [
+    "LiteralExpression",
+    "ComparisonExpression",
+    "LogicExpression",
+    "NotExpression",
+    "InExpression",
+  ];
+
   static fromCriteria(criteria: Criteria, alias: string = "") {
     const { filterExpression, limit, orderBy, pagination } =
       criteria.toObjectPlain();
@@ -118,6 +126,26 @@ export default class PostgresSqlGenerator {
     return `${alias.trim() === "" ? "" : `${alias}.`}"${field}"`.trim();
   }
 
+  private static validateOperandInLogicExp(
+    type: "left" | "right",
+    expression: grammar.Expression,
+  ) {
+    if (!this.validsExpInLogicExp.includes(expression.kind)) {
+      throw new SyntaxError(
+        `Invalid ${type} operand in LogicExpressions: expect (${this.validsExpInLogicExp.join(", ")}) received: ${expression.kind}`,
+      );
+    }
+
+    if (
+      expression.kind === "LiteralExpression" &&
+      typeof expression.value != "boolean"
+    ) {
+      throw new SyntaxError(
+        `Invalid ${type} operand in LogicExpression: expected boolean when is LiteralExpression, received ${typeof expression.value} (${expression.value})`,
+      );
+    }
+  }
+
   private static expressionToSql(
     expression: grammar.Expression,
     alias: string = "",
@@ -149,23 +177,9 @@ export default class PostgresSqlGenerator {
     }
 
     if (expression.kind === "LogicExpression") {
-      if (
-        expression.left.kind === "LiteralExpression" &&
-        typeof expression.left.value != "boolean"
-      ) {
-        throw new SyntaxError(
-          `Invalid left operand in LogicExpression: expected boolean, received ${typeof expression.left.value} (${expression.left.value})`,
-        );
-      }
+      this.validateOperandInLogicExp("left", expression.left);
 
-      if (
-        expression.right.kind === "LiteralExpression" &&
-        typeof expression.right.value != "boolean"
-      ) {
-        throw new SyntaxError(
-          `Invalid right operand in LogicExpression: expected boolean, received ${typeof expression.right.value} (${expression.right.value})`,
-        );
-      }
+      this.validateOperandInLogicExp("right", expression.right);
 
       const leftExpression: string = this.expressionToSql(
         expression.left,
@@ -200,32 +214,23 @@ export default class PostgresSqlGenerator {
       return `(NOT ${expr})`;
     }
 
-    if (expression.kind === "InExpression") {
+    if (expression.kind === "ArrayExpression") {
       const expr: string[] = [];
-
-      for (const itemExpression of expression.expression) {
-        const itemExpressionType = typeof itemExpression.value;
-        if (
-          expression.value.kind === "LiteralExpression" &&
-          itemExpressionType != typeof expression.value.value
-        ) {
-          throw new SyntaxError(
-            `Type mismatch in InExpression: elements must match value type (${typeof expression.value.value}), but received ${itemExpressionType} (${itemExpression.value})`,
-          );
-        }
-
-        const firstElementType = typeof expression.expression[0].value;
-        if (itemExpressionType != firstElementType) {
-          throw new SyntaxError(
-            `Inconsistent types in InExpression: expected all elements to be ${firstElementType}, but found ${itemExpressionType} (${itemExpression.value})`,
-          );
-        }
-
+      for (const itemExpression of expression.items) {
         expr.push(this.expressionToSql(itemExpression, alias, valuesParams));
       }
-      const value = this.expressionToSql(expression.value, alias, valuesParams);
+      return ` (${expr.join(", ")})`;
+    }
 
-      return `(${value} IN (${expr.join(", ")}))`;
+    if (expression.kind === "InExpression") {
+      const value = this.expressionToSql(expression.value, alias, valuesParams);
+      const arrayExpression = this.expressionToSql(
+        expression.arrayExpression,
+        alias,
+        valuesParams,
+      );
+
+      return `(${value} IN ${arrayExpression}`;
     }
 
     const unsupportedKind = (expression as { kind?: string }).kind ?? "unknown";

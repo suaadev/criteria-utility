@@ -50,6 +50,30 @@ export class FilterParser {
       );
     }
 
+    // Array Expression
+    if (Array.isArray(input)) {
+      const items: (
+        | grammar.LiteralExpression
+        | grammar.FieldExpression
+        | grammar.ArrayExpression
+      )[] = [];
+
+      for (const item of input) {
+        const expression = this.parse(item);
+        if (
+          expression.kind !== "LiteralExpression" &&
+          expression.kind !== "FieldExpression" &&
+          expression.kind !== "ArrayExpression"
+        ) {
+          throw new SyntaxError(
+            "The Array expressions require a literalExpression,ArrayExpression or FieldExpression",
+          );
+        }
+        items.push(expression);
+      }
+      return this.buildArrayExpression(items);
+    }
+
     if (!input || typeof input != "object") {
       throw new SyntaxError("Invalid input");
     }
@@ -143,27 +167,26 @@ export class FilterParser {
 
     // In expression
     if (operator === "in") {
-      const expressionsRaw = operation[operator];
+      const arrayRaw = operation[operator];
 
-      if (!Array.isArray(expressionsRaw) || expressionsRaw.length < 1) {
+      if (!Array.isArray(arrayRaw) || arrayRaw.length === 0) {
         throw new SyntaxError(
-          "The IN expression must contain an expression and an array of literals.",
+          "The Array expression in IN expression must contain a least one item",
         );
       }
 
-      const items: grammar.LiteralExpression[] = [];
+      const arrayExpression = this.parse(arrayRaw);
 
-      for (const element of expressionsRaw) {
-        const expression = this.parse(element);
-        if (expression.kind != "LiteralExpression") {
-          throw new SyntaxError(
-            "The IN expressions require a literalExpression or IdExpression with value",
-          );
-        }
-        items.push(expression);
+      if (arrayExpression.kind !== "ArrayExpression") {
+        throw new SyntaxError(
+          "The IN expression must contain an array of literals or fields expressions.",
+        );
       }
 
-      return this.buildInExpression(this.buildFieldExpression(key), items);
+      return this.buildInExpression(
+        this.buildFieldExpression(key),
+        arrayExpression,
+      );
     }
 
     throw new SyntaxError("The input expression is invalid");
@@ -197,11 +220,24 @@ export class FilterParser {
     return { kind: "NotExpression", expression };
   }
 
+  private static buildArrayExpression(
+    items: (
+      | grammar.LiteralExpression
+      | grammar.FieldExpression
+      | grammar.ArrayExpression
+    )[],
+  ): grammar.ArrayExpression {
+    return {
+      kind: "ArrayExpression",
+      items,
+    };
+  }
+
   private static buildInExpression(
     value: grammar.LiteralExpression | grammar.FieldExpression,
-    expression: grammar.LiteralExpression[],
+    arrayExpression: grammar.ArrayExpression,
   ): grammar.InExpression {
-    return { kind: "InExpression", expression, value };
+    return { kind: "InExpression", arrayExpression, value };
   }
 
   private static buildFieldExpression(value: string): grammar.FieldExpression {
