@@ -230,7 +230,7 @@ export default class PostgresSqlGenerator {
         valuesParams,
       );
 
-      return `(${value} IN ${arrayExpression}`;
+      return `(${value} IN ${arrayExpression})`;
     }
 
     const unsupportedKind = (expression as { kind?: string }).kind ?? "unknown";
