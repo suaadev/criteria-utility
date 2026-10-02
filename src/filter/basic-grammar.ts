@@ -18,8 +18,10 @@ export type ComparisonExpressionRaw<T> = Partial<{
   [Key in keyof T]: ComparisonExpressionRightRaw<T>;
 }>;
 
+export type ArrayExpressionRaw = (LiteralExpressionRaw | ArrayExpressionRaw)[];
+
 export type InExpressionRightRaw = {
-  in: LiteralExpressionRaw[];
+  in: ArrayExpressionRaw;
 };
 
 export type InExpressionRaw<T> = Partial<{
@@ -39,4 +41,5 @@ export type ExpressionRaw<T = Record<string, unknown>> =
   | ConditionalRaw<T>
   | ComparisonExpressionRaw<T>
   | InExpressionRaw<T>
-  | LiteralExpressionRaw;
+  | LiteralExpressionRaw
+  | ArrayExpressionRaw;

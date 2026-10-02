@@ -26,10 +26,15 @@ export type FieldExpression = {
   value: string;
 };
 
+export type ArrayExpression = {
+  kind: "ArrayExpression";
+  items: (LiteralExpression | FieldExpression | ArrayExpression)[];
+};
+
 export type InExpression = {
   kind: "InExpression";
-  value: LiteralExpression | FieldExpression;
-  expression: LiteralExpression[];
+  value: FieldExpression | LiteralExpression;
+  arrayExpression: ArrayExpression;
 };
 
 export type LogicExpression = {
@@ -45,4 +50,5 @@ export type Expression =
   | LogicExpression
   | ComparisonExpression
   | InExpression
-  | NotExpression;
+  | NotExpression
+  | ArrayExpression;
