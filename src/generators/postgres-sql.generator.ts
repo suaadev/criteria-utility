@@ -132,7 +132,7 @@ export default class PostgresSqlGenerator {
   ) {
     if (!this.validsExpInLogicExp.includes(expression.kind)) {
       throw new SyntaxError(
-        `Invalid ${type} operand in LogicExpressions: expect (${this.validsExpInLogicExp.join(", ")}) received: ${expression.kind}`,
+        `Invalid ${type} operand in LogicExpression: expected (${this.validsExpInLogicExp.join(", ")}), received: ${expression.kind}`,
       );
     }
 
@@ -141,7 +141,7 @@ export default class PostgresSqlGenerator {
       typeof expression.value != "boolean"
     ) {
       throw new SyntaxError(
-        `Invalid ${type} operand in LogicExpression: expected boolean when is LiteralExpression, received ${typeof expression.value} (${expression.value})`,
+        `Invalid ${type} operand in LogicExpression: expected boolean for LiteralExpression, received ${typeof expression.value} (${expression.value})`,
       );
     }
   }
@@ -230,7 +230,7 @@ export default class PostgresSqlGenerator {
         valuesParams,
       );
 
-      return `(${value} IN ${arrayExpression}`;
+      return `(${value} IN ${arrayExpression})`;
     }
 
     const unsupportedKind = (expression as { kind?: string }).kind ?? "unknown";

@@ -17,7 +17,7 @@ export default class CursorSerializer {
       const value = object[field];
       if (value === null || value === undefined) {
         throw new Error(
-          `The value for field ${field.toString()} is invalid, received:${value}`,
+          `The value for field ${field.toString()} is invalid, received: ${value}`,
         );
       }
 
