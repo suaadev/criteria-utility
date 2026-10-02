@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { FilterParser } from "../src/filter/filter-parser";
-import { ExpressionRaw, InExpressionRaw } from "../src/filter/basic-grammar";
+import { ExpressionRaw } from "../src/filter/basic-grammar";
 
 describe("FilterParser", () => {
   describe("general expressions", () => {
@@ -137,13 +137,34 @@ describe("FilterParser", () => {
       expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
-    it("should throw SyntaxError when comparison value is an empty array", () => {
+    it("should parse an equals expression", () => {
       const badExpression = {
-        1: { equals: [] },
+        phoneNumbers: { equals: ["+56 30000000", "+51 70000000"] },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
-        SyntaxError,
-      );
+      expect(FilterParser.parse(badExpression)).toMatchObject({
+        kind: "ComparisonExpression",
+        left: {
+          kind: "FieldExpression",
+        },
+        right: {
+          kind: "ArrayExpression",
+        },
+      });
+    });
+
+    it("should parse an equals expression", () => {
+      const badExpression = {
+        genere: { equals: "techno" },
+      };
+      expect(FilterParser.parse(badExpression)).toMatchObject({
+        kind: "ComparisonExpression",
+        left: {
+          kind: "FieldExpression",
+        },
+        right: {
+          kind: "LiteralExpression",
+        },
+      });
     });
 
     it("should throw SyntaxError when a field contains more than one operator", () => {
@@ -157,7 +178,16 @@ describe("FilterParser", () => {
 
     it("should throw SyntaxError when lt operator is an empty object", () => {
       const badExpression = {
-        lt: {},
+        some: { lt: {} },
+      };
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
+
+    it("should throw SyntaxError when gt operator is a function", () => {
+      const badExpression = {
+        1: { gt: () => {} },
       };
       expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
@@ -166,7 +196,9 @@ describe("FilterParser", () => {
 
     it("should throw SyntaxError when gt operator is an empty object", () => {
       const badExpression = {
-        gt: {},
+        username: {
+          gt: {},
+        },
       };
       expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
         SyntaxError,
@@ -175,7 +207,7 @@ describe("FilterParser", () => {
 
     it("should throw SyntaxError when comparison operands contain invalid types", () => {
       const badExpression = {
-        diff: [() => {}, undefined],
+        cat: { diff: [() => {}, undefined] },
       };
 
       expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
@@ -291,9 +323,19 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when in array elements are not literal expressions", () => {
+    it("should throw SyntaxError when is array is invalid", () => {
       const badExpression = {
-        in: [1, [1, 2, { and: [true, true] }]],
+        some: { in: [1, [1, 2, 1, 1, {}]] },
+      };
+
+      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+        SyntaxError,
+      );
+    });
+
+    it("should throw SyntaxError when in array are not valid expression", () => {
+      const badExpression = {
+        some: { in: [() => {}, { user: "daaa" }] },
       };
 
       expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
@@ -312,6 +354,38 @@ describe("FilterParser", () => {
         value: {
           kind: "FieldExpression",
           value: "cat",
+        },
+      });
+    });
+
+    it("should parse a valid in expression with a field and array expression into an array expression", () => {
+      const expression: ExpressionRaw<{}> = {
+        cat: { in: ["dog", "$animal", ["$dog", ["duck"]]] },
+      };
+
+      const resultParse = FilterParser.parse(expression);
+      expect(resultParse).toMatchObject({
+        kind: "InExpression",
+        value: {
+          kind: "FieldExpression",
+          value: "cat",
+        },
+        arrayExpression: {
+          kind: "ArrayExpression",
+          items: [
+            { kind: "LiteralExpression", value: "dog" },
+            { kind: "FieldExpression", value: "animal" },
+            {
+              kind: "ArrayExpression",
+              items: [
+                { kind: "FieldExpression", value: "dog" },
+                {
+                  kind: "ArrayExpression",
+                  items: [{ kind: "LiteralExpression", value: "duck" }],
+                },
+              ],
+            },
+          ],
         },
       });
     });
