@@ -34,7 +34,7 @@ export class FilterParser {
     if (typeof input === "string" && input.charAt(0) === "$") {
       if (!this.idExpressionRegex.test(input)) {
         throw new SyntaxError(
-          `The field or id expression provide is invalid: ${input}`,
+          `The field or id expression provided is invalid: ${input}`,
         );
       }
       return this.buildFieldExpression(input.slice(1));
@@ -66,7 +66,7 @@ export class FilterParser {
           expression.kind !== "ArrayExpression"
         ) {
           throw new SyntaxError(
-            "The Array expressions require a literalExpression,ArrayExpression or FieldExpression",
+            "The Array expression requires a LiteralExpression, ArrayExpression, or FieldExpression",
           );
         }
         items.push(expression);
@@ -82,7 +82,7 @@ export class FilterParser {
 
     if (keys.length != 1) {
       throw new SyntaxError(
-        "Input object is not valid, only must contain one key",
+        "Input object is not valid; it must contain only one key",
       );
     }
 
@@ -95,12 +95,12 @@ export class FilterParser {
 
       if (!Array.isArray(expressionsRaw))
         throw new SyntaxError(
-          `The Logic expression must be a array with expressions.`,
+          `The Logic expression must be an array of expressions.`,
         );
 
       if (expressionsRaw.length <= 1) {
         throw new SyntaxError(
-          "The Logic expression must be contain at least two arguments.",
+          "The Logic expression must contain at least two arguments.",
         );
       }
 
@@ -119,7 +119,7 @@ export class FilterParser {
       const expressionsRaw = (input as basicGrammar.NotExpressionRaw<T>)["not"];
 
       if (!expressionsRaw) {
-        throw new SyntaxError("The NOT expressions is invalid");
+        throw new SyntaxError("The NOT expression is invalid");
       }
 
       const expression: grammar.Expression = this.parse(expressionsRaw);
@@ -142,7 +142,7 @@ export class FilterParser {
     const keysOperation = Object.keys(operation);
 
     if (keysOperation.length !== 1) {
-      throw new SyntaxError("The field require a operand");
+      throw new SyntaxError("The field requires an operand");
     }
 
     const operator: string = keysOperation[0];
@@ -171,7 +171,7 @@ export class FilterParser {
 
       if (!Array.isArray(arrayRaw) || arrayRaw.length === 0) {
         throw new SyntaxError(
-          "The Array expression in IN expression must contain a least one item",
+          "The Array expression in IN expression must contain at least one item",
         );
       }
 
@@ -179,7 +179,7 @@ export class FilterParser {
 
       if (arrayExpression.kind !== "ArrayExpression") {
         throw new SyntaxError(
-          "The IN expression must contain an array of literals or fields expressions.",
+          "The IN expression must contain an array of literal or field expressions.",
         );
       }
 

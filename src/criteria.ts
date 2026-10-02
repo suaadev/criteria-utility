@@ -37,7 +37,7 @@ export class Criteria {
 
   private validateLimit(limit: number) {
     if (!Number.isFinite(limit) || limit < 1) {
-      throw new Error("Limit must be a finite integer greater or equal to 1");
+      throw new Error("Limit must be a finite integer greater than or equal to 1");
     }
   }
 
