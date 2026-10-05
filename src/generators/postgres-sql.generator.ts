@@ -1,6 +1,6 @@
-import { Criteria, Sort } from "../criteria";
-import * as grammar from "../filter/grammar";
-import CursorSerializer from "./cursor-serializer";
+import { Criteria, Sort } from "../criteria.js";
+import * as grammar from "../filter/grammar.js";
+import CursorSerializer from "./cursor-serializer.js";
 
 export default class PostgresSqlGenerator {
   private static mapComparisonOperatorsToSql: Record<
