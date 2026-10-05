@@ -1,9 +1,9 @@
-import { ExpressionRaw } from "./filter/basic-grammar";
-import { FilterParser } from "./filter/filter-parser";
-import { Expression } from "./filter/grammar";
-import Pagination from "./pagination/pagination";
+import { ExpressionRaw } from './filter/basic-grammar.js';
+import { FilterParser } from './filter/filter-parser.js';
+import { Expression } from './filter/grammar.js';
+import Pagination from './pagination/pagination.js';
 
-export type Sort = "ASC" | "DESC";
+export type Sort = 'ASC' | 'DESC';
 
 export type OrderBy = Map<string, Sort>;
 
@@ -37,7 +37,9 @@ export class Criteria {
 
   private validateLimit(limit: number) {
     if (!Number.isFinite(limit) || limit < 1) {
-      throw new Error("Limit must be a finite integer greater than or equal to 1");
+      throw new Error(
+        'Limit must be a finite integer greater than or equal to 1',
+      );
     }
   }
 

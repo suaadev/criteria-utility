@@ -1,5 +1,5 @@
-import * as basicGrammar from "./basic-grammar";
-import * as grammar from "./grammar";
+import * as basicGrammar from "./basic-grammar.js";
+import * as grammar from "./grammar.js";
 
 export class FilterParser {
   private static readonly mapRawComparisonOperator: Record<
