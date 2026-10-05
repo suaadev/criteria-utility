@@ -2,9 +2,9 @@
   "name": "criteria-utility",
   "version": "1.0.0",
   "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
+  "license": "MIT",
+  "author": "David Suarez",
+  "type": "module",
   "main": "lib/index.ts",
   "scripts": {
     "start": "npx tsx usage.ts",
@@ -26,6 +26,10 @@
     "@swc/jest": "^0.2.39",
     "@types/node": "^22.20.3",
     "jest": "^30.5.1",
-    "typescript": "^7.0.2"
+    "eslint": "^10.11.0",
+    "@eslint/js": "^10.0.1",
+    "typescript-eslint": "^8.71.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-7": "npm:typescript@^7.0.2"
   }
 }
