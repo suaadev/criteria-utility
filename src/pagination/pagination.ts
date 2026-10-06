@@ -23,7 +23,7 @@ export default class Pagination<T = unknown> {
 
   static validatePage(page: number) {
     if (page < 1) {
-      throw new Error("Page must be an integer greater than or equal to 1");
+      throw new Error('Page must be an integer greater than or equal to 1');
     }
   }
 

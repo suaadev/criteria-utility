@@ -1,11 +1,11 @@
 /** @type {import('jest').Config} */
 const config = {
-  testEnvironment: "node",
+  testEnvironment: 'node',
   transform: {
-    "^.+\\.(t|j)sx?$": "@swc/jest",
+    '^.+\\.(t|j)sx?$': '@swc/jest',
   },
-  modulePathIgnorePatterns: ["<rootDir>/dist/"],
-  coverageDirectory: "tests/coverage",
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  coverageDirectory: 'tests/coverage',
 };
 
 module.exports = config;

@@ -1,35 +1,35 @@
-import { describe, expect, it } from "@jest/globals";
-import { FilterParser } from "../src/filter/filter-parser";
-import { ExpressionRaw } from "../src/filter/basic-grammar";
+import { describe, expect, it } from '@jest/globals';
+import { FilterParser } from '../src/filter/filter-parser';
+import { ExpressionRaw } from '../src/filter/basic-grammar';
 
-describe("FilterParser", () => {
-  describe("general expressions", () => {
-    it("should parse valid logical and comparison expressions", () => {
+describe('FilterParser', () => {
+  describe('general expressions', () => {
+    it('should parse valid logical and comparison expressions', () => {
       const goodExpression: ExpressionRaw = {
-        and: [{ username: { diff: "jazzz" } }, { age: { lte: "$parentAage" } }],
+        and: [{ username: { diff: 'jazzz' } }, { age: { lte: '$parentAage' } }],
       };
 
       const parserResult = FilterParser.parse(goodExpression);
 
       expect(parserResult).toMatchObject({
-        kind: "LogicExpression",
+        kind: 'LogicExpression',
         left: {
-          kind: "ComparisonExpression",
-          left: { kind: "FieldExpression", value: "username" },
-          operator: "!=",
-          right: { kind: "LiteralExpression", value: "jazzz" },
+          kind: 'ComparisonExpression',
+          left: { kind: 'FieldExpression', value: 'username' },
+          operator: '!=',
+          right: { kind: 'LiteralExpression', value: 'jazzz' },
         },
-        operator: "&&",
+        operator: '&&',
         right: {
-          kind: "ComparisonExpression",
-          left: { kind: "FieldExpression", value: "age" },
-          operator: "<=",
-          right: { kind: "FieldExpression", value: "parentAage" },
+          kind: 'ComparisonExpression',
+          left: { kind: 'FieldExpression', value: 'age' },
+          operator: '<=',
+          right: { kind: 'FieldExpression', value: 'parentAage' },
         },
       });
     });
 
-    it("should throw SyntaxError when input object contains an invalid key", () => {
+    it('should throw SyntaxError when input object contains an invalid key', () => {
       const badExpression = {
         wrongKey: [1, 2],
       };
@@ -38,24 +38,24 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should parse null as a LiteralExpression", () => {
+    it('should parse null as a LiteralExpression', () => {
       const badExpression = null as unknown as ExpressionRaw;
       expect(FilterParser.parse(badExpression)).toMatchObject({
-        kind: "LiteralExpression",
+        kind: 'LiteralExpression',
         value: null,
       });
     });
   });
 
-  describe("logical expressions (and / or)", () => {
-    it("should throw SyntaxError when logical array is empty", () => {
+  describe('logical expressions (and / or)', () => {
+    it('should throw SyntaxError when logical array is empty', () => {
       const badExpression = {
         and: [],
       };
       expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
-    it("should throw SyntaxError when logical array has fewer than two elements", () => {
+    it('should throw SyntaxError when logical array has fewer than two elements', () => {
       const badExpression: ExpressionRaw = {
         not: {
           or: [true],
@@ -64,14 +64,14 @@ describe("FilterParser", () => {
       expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
-    it("should throw SyntaxError when logical array contains an empty object", () => {
+    it('should throw SyntaxError when logical array contains an empty object', () => {
       const badExpression: ExpressionRaw = {
         and: [{}, 1],
       };
       expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
-    it("should throw SyntaxError when logical operand is an object instead of array", () => {
+    it('should throw SyntaxError when logical operand is an object instead of array', () => {
       const badExpression = {
         and: {},
       };
@@ -80,7 +80,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when logical operand is null", () => {
+    it('should throw SyntaxError when logical operand is null', () => {
       const badExpression = {
         and: null,
       };
@@ -89,85 +89,85 @@ describe("FilterParser", () => {
       ).toThrow(SyntaxError);
     });
 
-    it("should parse an or expression with multiple conditions", () => {
+    it('should parse an or expression with multiple conditions', () => {
       const expression: ExpressionRaw = {
         or: [
-          { role: { equals: "admin" } },
-          { role: { equals: "editor" } },
-          { role: { equals: "viewer" } },
+          { role: { equals: 'admin' } },
+          { role: { equals: 'editor' } },
+          { role: { equals: 'viewer' } },
         ],
       };
 
       const result = FilterParser.parse(expression);
 
       expect(result).toMatchObject({
-        kind: "LogicExpression",
-        operator: "||",
+        kind: 'LogicExpression',
+        operator: '||',
         left: {
-          kind: "LogicExpression",
-          operator: "||",
+          kind: 'LogicExpression',
+          operator: '||',
           left: {
-            kind: "ComparisonExpression",
-            left: { kind: "FieldExpression", value: "role" },
-            operator: "==",
-            right: { kind: "LiteralExpression", value: "admin" },
+            kind: 'ComparisonExpression',
+            left: { kind: 'FieldExpression', value: 'role' },
+            operator: '==',
+            right: { kind: 'LiteralExpression', value: 'admin' },
           },
           right: {
-            kind: "ComparisonExpression",
-            left: { kind: "FieldExpression", value: "role" },
-            operator: "==",
-            right: { kind: "LiteralExpression", value: "editor" },
+            kind: 'ComparisonExpression',
+            left: { kind: 'FieldExpression', value: 'role' },
+            operator: '==',
+            right: { kind: 'LiteralExpression', value: 'editor' },
           },
         },
         right: {
-          kind: "ComparisonExpression",
-          left: { kind: "FieldExpression", value: "role" },
-          operator: "==",
-          right: { kind: "LiteralExpression", value: "viewer" },
+          kind: 'ComparisonExpression',
+          left: { kind: 'FieldExpression', value: 'role' },
+          operator: '==',
+          right: { kind: 'LiteralExpression', value: 'viewer' },
         },
       });
     });
   });
 
-  describe("comparison expressions", () => {
-    it("should throw SyntaxError when comparison operand is an empty object", () => {
+  describe('comparison expressions', () => {
+    it('should throw SyntaxError when comparison operand is an empty object', () => {
       const badExpression: ExpressionRaw = {
         dog: { equals: {} },
       };
       expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
-    it("should parse an equals expression", () => {
+    it('should parse an equals expression', () => {
       const badExpression = {
-        phoneNumbers: { equals: ["+56 30000000", "+51 70000000"] },
+        phoneNumbers: { equals: ['+56 30000000', '+51 70000000'] },
       };
       expect(FilterParser.parse(badExpression)).toMatchObject({
-        kind: "ComparisonExpression",
+        kind: 'ComparisonExpression',
         left: {
-          kind: "FieldExpression",
+          kind: 'FieldExpression',
         },
         right: {
-          kind: "ArrayExpression",
+          kind: 'ArrayExpression',
         },
       });
     });
 
-    it("should parse an equals expression", () => {
+    it('should parse an equals expression', () => {
       const badExpression = {
-        genere: { equals: "techno" },
+        genere: { equals: 'techno' },
       };
       expect(FilterParser.parse(badExpression)).toMatchObject({
-        kind: "ComparisonExpression",
+        kind: 'ComparisonExpression',
         left: {
-          kind: "FieldExpression",
+          kind: 'FieldExpression',
         },
         right: {
-          kind: "LiteralExpression",
+          kind: 'LiteralExpression',
         },
       });
     });
 
-    it("should throw SyntaxError when a field contains more than one operator", () => {
+    it('should throw SyntaxError when a field contains more than one operator', () => {
       const badExpression = {
         age: { gt: 10, lt: 20 },
       };
@@ -176,7 +176,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when lt operator is an empty object", () => {
+    it('should throw SyntaxError when lt operator is an empty object', () => {
       const badExpression = {
         some: { lt: {} },
       };
@@ -185,7 +185,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when gt operator is a function", () => {
+    it('should throw SyntaxError when gt operator is a function', () => {
       const badExpression = {
         1: { gt: () => {} },
       };
@@ -194,7 +194,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when gt operator is an empty object", () => {
+    it('should throw SyntaxError when gt operator is an empty object', () => {
       const badExpression = {
         username: {
           gt: {},
@@ -205,7 +205,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when comparison operands contain invalid types", () => {
+    it('should throw SyntaxError when comparison operands contain invalid types', () => {
       const badExpression = {
         cat: { diff: [() => {}, undefined] },
       };
@@ -215,22 +215,22 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should parse a comparison between two fields", () => {
+    it('should parse a comparison between two fields', () => {
       const expression: ExpressionRaw = {
-        startDate: { lte: "$endDate" },
+        startDate: { lte: '$endDate' },
       };
 
       const result = FilterParser.parse(expression);
 
       expect(result).toMatchObject({
-        kind: "ComparisonExpression",
-        left: { kind: "FieldExpression", value: "startDate" },
-        operator: "<=",
-        right: { kind: "FieldExpression", value: "endDate" },
+        kind: 'ComparisonExpression',
+        left: { kind: 'FieldExpression', value: 'startDate' },
+        operator: '<=',
+        right: { kind: 'FieldExpression', value: 'endDate' },
       });
     });
 
-    it("should throw SyntaxError when a field is not a valid operator", () => {
+    it('should throw SyntaxError when a field is not a valid operator', () => {
       const badExpression = {
         age: { badOperator: {} },
       };
@@ -240,15 +240,15 @@ describe("FilterParser", () => {
     });
   });
 
-  describe("not expressions", () => {
-    it("should throw SyntaxError when not expression is an empty object", () => {
+  describe('not expressions', () => {
+    it('should throw SyntaxError when not expression is an empty object', () => {
       const badExpression: ExpressionRaw = {
         not: {},
       };
       expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
-    it("should throw SyntaxError when not expression is a function", () => {
+    it('should throw SyntaxError when not expression is a function', () => {
       const badExpression = {
         not: () => {},
       };
@@ -257,7 +257,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when not expression is null", () => {
+    it('should throw SyntaxError when not expression is null', () => {
       const badExpression = {
         not: null,
       };
@@ -266,27 +266,27 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should parse a valid not expression wrapping a comparison", () => {
+    it('should parse a valid not expression wrapping a comparison', () => {
       const expression: ExpressionRaw = {
-        not: { status: { equals: "inactive" } },
+        not: { status: { equals: 'inactive' } },
       };
 
       const result = FilterParser.parse(expression);
 
       expect(result).toMatchObject({
-        kind: "NotExpression",
+        kind: 'NotExpression',
         expression: {
-          kind: "ComparisonExpression",
-          left: { kind: "FieldExpression", value: "status" },
-          operator: "==",
-          right: { kind: "LiteralExpression", value: "inactive" },
+          kind: 'ComparisonExpression',
+          left: { kind: 'FieldExpression', value: 'status' },
+          operator: '==',
+          right: { kind: 'LiteralExpression', value: 'inactive' },
         },
       });
     });
   });
 
-  describe("in expressions", () => {
-    it("should throw SyntaxError when in array is empty", () => {
+  describe('in expressions', () => {
+    it('should throw SyntaxError when in array is empty', () => {
       const badExpression = {
         role: { in: [] },
       };
@@ -295,7 +295,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when in operand contains invalid values", () => {
+    it('should throw SyntaxError when in operand contains invalid values', () => {
       const badExpression = {
         in: [() => {}, null],
       };
@@ -304,7 +304,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when in array contains complex expressions", () => {
+    it('should throw SyntaxError when in array contains complex expressions', () => {
       const badExpression = {
         role: { in: [{ and: [true, true] }] },
       };
@@ -313,7 +313,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when in target is an invalid expression", () => {
+    it('should throw SyntaxError when in target is an invalid expression', () => {
       const badExpression = {
         in: [{ and: [true, true] }, [1, 2]],
       };
@@ -323,7 +323,7 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when is array is invalid", () => {
+    it('should throw SyntaxError when is array is invalid', () => {
       const badExpression = {
         some: { in: [1, [1, 2, 1, 1, {}]] },
       };
@@ -333,9 +333,9 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should throw SyntaxError when in array are not valid expression", () => {
+    it('should throw SyntaxError when in array are not valid expression', () => {
       const badExpression = {
-        some: { in: [() => {}, { user: "daaa" }] },
+        some: { in: [() => {}, { user: 'daaa' }] },
       };
 
       expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
@@ -343,45 +343,50 @@ describe("FilterParser", () => {
       );
     });
 
-    it("should parse a valid in expression with a field and literal list", () => {
+    it('should parse a valid in expression with a field and literal list', () => {
       const expression: ExpressionRaw = {
-        cat: { in: ["dog", "cat"] },
+        cat: { in: ['dog', 'cat'] },
       };
 
       const resultParse = FilterParser.parse(expression);
       expect(resultParse).toMatchObject({
-        kind: "InExpression",
+        kind: 'InExpression',
         value: {
-          kind: "FieldExpression",
-          value: "cat",
+          kind: 'FieldExpression',
+          value: 'cat',
         },
       });
     });
 
-    it("should parse a valid in expression with a field and array expression into an array expression", () => {
+    it('should parse a valid in expression with a field and array expression into an array expression', () => {
       const expression: ExpressionRaw<{}> = {
-        cat: { in: ["dog", "$animal", ["$dog", ["duck"]]] },
+        cat: { in: ['dog', '$animal', ['$dog', ['duck']]] },
       };
 
       const resultParse = FilterParser.parse(expression);
       expect(resultParse).toMatchObject({
-        kind: "InExpression",
+        kind: 'InExpression',
         value: {
-          kind: "FieldExpression",
-          value: "cat",
+          kind: 'FieldExpression',
+          value: 'cat',
         },
         arrayExpression: {
-          kind: "ArrayExpression",
+          kind: 'ArrayExpression',
           items: [
-            { kind: "LiteralExpression", value: "dog" },
-            { kind: "FieldExpression", value: "animal" },
+            { kind: 'LiteralExpression', value: 'dog' },
+            { kind: 'FieldExpression', value: 'animal' },
             {
-              kind: "ArrayExpression",
+              kind: 'ArrayExpression',
               items: [
-                { kind: "FieldExpression", value: "dog" },
+                { kind: 'FieldExpression', value: 'dog' },
                 {
-                  kind: "ArrayExpression",
-                  items: [{ kind: "LiteralExpression", value: "duck" }],
+                  kind: 'ArrayExpression',
+                  items: [
+                    {
+                      kind: 'LiteralExpression',
+                      value: 'duck',
+                    },
+                  ],
                 },
               ],
             },
@@ -391,52 +396,52 @@ describe("FilterParser", () => {
     });
   });
 
-  describe("field identifier expressions", () => {
-    it("should parse a field expression as target of an in operator", () => {
+  describe('field identifier expressions', () => {
+    it('should parse a field expression as target of an in operator', () => {
       const expression: ExpressionRaw = {
-        cat: { in: ["dog", "cat"] },
+        cat: { in: ['dog', 'cat'] },
       };
 
       const resultParse = FilterParser.parse(expression);
       expect(resultParse).toMatchObject({
-        kind: "InExpression",
+        kind: 'InExpression',
         value: {
-          kind: "FieldExpression",
-          value: "cat",
+          kind: 'FieldExpression',
+          value: 'cat',
         },
       });
     });
 
-    it("should parse a valid field reference matching identifier regex", () => {
+    it('should parse a valid field reference matching identifier regex', () => {
       const expression: ExpressionRaw = {
-        1: { equals: "$_sd_a_3_4" },
+        1: { equals: '$_sd_a_3_4' },
       };
       const resultParse = FilterParser.parse(expression);
 
       expect(resultParse).toMatchObject({
-        kind: "ComparisonExpression",
+        kind: 'ComparisonExpression',
       });
     });
 
-    it("should throw SyntaxError when field reference is only a dollar sign", () => {
+    it('should throw SyntaxError when field reference is only a dollar sign', () => {
       const expression: ExpressionRaw = {
-        1: { equals: "$" },
+        1: { equals: '$' },
       };
 
       expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
     });
 
-    it("should throw SyntaxError when field reference starts with numbers after dollar", () => {
+    it('should throw SyntaxError when field reference starts with numbers after dollar', () => {
       const expression: ExpressionRaw = {
-        username: { equals: "$123sda" },
+        username: { equals: '$123sda' },
       };
 
       expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
     });
 
-    it("should throw SyntaxError when field reference contains invalid characters", () => {
+    it('should throw SyntaxError when field reference contains invalid characters', () => {
       const expression: ExpressionRaw = {
-        1: { equals: "$s&?da34" },
+        1: { equals: '$s&?da34' },
       };
 
       expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
