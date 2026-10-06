@@ -9,7 +9,8 @@
   "scripts": {
     "start": "npx tsx usage.ts",
     "compile": "npx tsc",
-    "test": "jest --verbose --coverage"
+    "test": "jest --verbose --coverage",
+    "format": "prettier --write --config .prettierrc ."
   },
   "exports": {
     ".": "./lib/index.js"
@@ -21,15 +22,16 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.5.1",
     "@swc/core": "^1.16.2",
     "@swc/jest": "^0.2.39",
     "@types/node": "^22.20.3",
-    "jest": "^30.5.1",
     "eslint": "^10.11.0",
-    "@eslint/js": "^10.0.1",
-    "typescript-eslint": "^8.71.0",
+    "jest": "^30.5.1",
+    "prettier": "^3.9.9",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-7": "npm:typescript@^7.0.2"
+    "typescript-7": "npm:typescript@^7.0.2",
+    "typescript-eslint": "^8.71.0"
   }
 }
