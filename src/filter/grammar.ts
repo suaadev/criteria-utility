@@ -1,44 +1,44 @@
 export type LiteralExpressionValids = number | string | boolean | null;
 
-export type LogicalOperator = "&&" | "||";
+export type LogicalOperator = '&&' | '||';
 
-export type ComparisonOperator = "==" | "!=" | ">" | "<" | ">=" | "<=";
+export type ComparisonOperator = '==' | '!=' | '>' | '<' | '>=' | '<=';
 
 export type LiteralExpression = {
-  kind: "LiteralExpression";
+  kind: 'LiteralExpression';
   value: LiteralExpressionValids;
 };
 
 export type NotExpression = {
-  kind: "NotExpression";
+  kind: 'NotExpression';
   expression: Expression;
 };
 
 export type ComparisonExpression = {
-  kind: "ComparisonExpression";
+  kind: 'ComparisonExpression';
   left: Expression;
   operator: ComparisonOperator;
   right: Expression;
 };
 
 export type FieldExpression = {
-  kind: "FieldExpression";
+  kind: 'FieldExpression';
   value: string;
 };
 
 export type ArrayExpression = {
-  kind: "ArrayExpression";
+  kind: 'ArrayExpression';
   items: (LiteralExpression | FieldExpression | ArrayExpression)[];
 };
 
 export type InExpression = {
-  kind: "InExpression";
+  kind: 'InExpression';
   value: FieldExpression | LiteralExpression;
   arrayExpression: ArrayExpression;
 };
 
 export type LogicExpression = {
-  kind: "LogicExpression";
+  kind: 'LogicExpression';
   left: Expression;
   operator: LogicalOperator;
   right: Expression;

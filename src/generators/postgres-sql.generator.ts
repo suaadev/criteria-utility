@@ -1,37 +1,37 @@
-import { Criteria, Sort } from "../criteria.js";
-import * as grammar from "../filter/grammar.js";
-import CursorSerializer from "./cursor-serializer.js";
+import { Criteria, Sort } from '../criteria.js';
+import * as grammar from '../filter/grammar.js';
+import CursorSerializer from './cursor-serializer.js';
 
 export default class PostgresSqlGenerator {
   private static mapComparisonOperatorsToSql: Record<
     grammar.ComparisonOperator,
     string
   > = {
-    "==": "=",
-    "!=": "!=",
-    "<=": "<=",
-    ">=": ">=",
-    "<": "<",
-    ">": ">",
+    '==': '=',
+    '!=': '!=',
+    '<=': '<=',
+    '>=': '>=',
+    '<': '<',
+    '>': '>',
   };
 
   private static mapLogicperatorsToSql: Record<
     grammar.LogicalOperator,
     string
   > = {
-    "&&": "AND",
-    "||": "OR",
+    '&&': 'AND',
+    '||': 'OR',
   };
 
   private static validsExpInLogicExp = [
-    "LiteralExpression",
-    "ComparisonExpression",
-    "LogicExpression",
-    "NotExpression",
-    "InExpression",
+    'LiteralExpression',
+    'ComparisonExpression',
+    'LogicExpression',
+    'NotExpression',
+    'InExpression',
   ];
 
-  static fromCriteria(criteria: Criteria, alias: string = "") {
+  static fromCriteria(criteria: Criteria, alias: string = '') {
     const { filterExpression, limit, orderBy, pagination } =
       criteria.toObjectPlain();
 
@@ -49,12 +49,12 @@ export default class PostgresSqlGenerator {
       );
     }
 
-    let offsetStatement = "";
+    let offsetStatement = '';
 
-    let limitStatment = "";
+    let limitStatment = '';
 
     if (Number.isFinite(limit)) {
-      if (pagination && typeof pagination.cursor === "string") {
+      if (pagination && typeof pagination.cursor === 'string') {
         const fields = CursorSerializer.decode(pagination.cursor);
 
         orderByFields = [];
@@ -81,21 +81,21 @@ export default class PostgresSqlGenerator {
           fieldsWithParams[0],
         ];
 
-        const output: string[] = [fieldsWithParams[0].join(" ")];
+        const output: string[] = [fieldsWithParams[0].join(' ')];
 
         for (const currentField of fieldsWithParams) {
           const lastField = lastCombination[lastCombination.length - 1];
 
-          lastField[1] = "=";
+          lastField[1] = '=';
 
           lastCombination.push(currentField);
 
           output.push(
-            `(${lastCombination.map((m) => m.join(" ")).join(" AND ")})`,
+            `(${lastCombination.map((m) => m.join(' ')).join(' AND ')})`,
           );
         }
 
-        whereStatments.push(`(${output.join(" OR ")})`);
+        whereStatments.push(`(${output.join(' OR ')})`);
       } else if (pagination && Number.isFinite(pagination.page)) {
         offsetStatement = `OFFSET ${(limit as number) * ((pagination.page as number) - 1)}`;
       }
@@ -104,12 +104,12 @@ export default class PostgresSqlGenerator {
     }
 
     const outputSql: string = [
-      whereStatments.join(" AND "),
-      orderByFields.length > 0 ? `ORDER BY ${orderByFields.join(", ")}` : "",
+      whereStatments.join(' AND '),
+      orderByFields.length > 0 ? `ORDER BY ${orderByFields.join(', ')}` : '',
       offsetStatement,
       limitStatment,
     ]
-      .join(" ")
+      .join(' ')
       .trim();
 
     return {
@@ -119,26 +119,26 @@ export default class PostgresSqlGenerator {
   }
 
   private static resolveSort(operator: string): Sort {
-    return operator == ">" ? "ASC" : "DESC";
+    return operator == '>' ? 'ASC' : 'DESC';
   }
 
-  private static buildFieldWithAlias(field: unknown, alias: string = "") {
-    return `${alias.trim() === "" ? "" : `${alias}.`}"${field}"`.trim();
+  private static buildFieldWithAlias(field: unknown, alias: string = '') {
+    return `${alias.trim() === '' ? '' : `${alias}.`}"${field}"`.trim();
   }
 
   private static validateOperandInLogicExp(
-    type: "left" | "right",
+    type: 'left' | 'right',
     expression: grammar.Expression,
   ) {
     if (!this.validsExpInLogicExp.includes(expression.kind)) {
       throw new SyntaxError(
-        `Invalid ${type} operand in LogicExpression: expected (${this.validsExpInLogicExp.join(", ")}), received: ${expression.kind}`,
+        `Invalid ${type} operand in LogicExpression: expected (${this.validsExpInLogicExp.join(', ')}), received: ${expression.kind}`,
       );
     }
 
     if (
-      expression.kind === "LiteralExpression" &&
-      typeof expression.value != "boolean"
+      expression.kind === 'LiteralExpression' &&
+      typeof expression.value != 'boolean'
     ) {
       throw new SyntaxError(
         `Invalid ${type} operand in LogicExpression: expected boolean for LiteralExpression, received ${typeof expression.value} (${expression.value})`,
@@ -148,19 +148,19 @@ export default class PostgresSqlGenerator {
 
   private static expressionToSql(
     expression: grammar.Expression,
-    alias: string = "",
+    alias: string = '',
     valuesParams: unknown[],
   ): string {
-    if (expression.kind === "LiteralExpression") {
+    if (expression.kind === 'LiteralExpression') {
       valuesParams.push(expression.value);
       return `$${valuesParams.length}`;
     }
 
-    if (expression.kind === "FieldExpression") {
+    if (expression.kind === 'FieldExpression') {
       return this.buildFieldWithAlias(expression.value, alias);
     }
 
-    if (expression.kind === "ComparisonExpression") {
+    if (expression.kind === 'ComparisonExpression') {
       const leftExpression: string = this.expressionToSql(
         expression.left,
         alias,
@@ -176,10 +176,10 @@ export default class PostgresSqlGenerator {
       return `(${leftExpression} ${this.mapComparisonOperatorsToSql[expression.operator]} ${rightExpression})`;
     }
 
-    if (expression.kind === "LogicExpression") {
-      this.validateOperandInLogicExp("left", expression.left);
+    if (expression.kind === 'LogicExpression') {
+      this.validateOperandInLogicExp('left', expression.left);
 
-      this.validateOperandInLogicExp("right", expression.right);
+      this.validateOperandInLogicExp('right', expression.right);
 
       const leftExpression: string = this.expressionToSql(
         expression.left,
@@ -196,10 +196,10 @@ export default class PostgresSqlGenerator {
       return `(${leftExpression} ${this.mapLogicperatorsToSql[expression.operator]} ${rightExpression})`;
     }
 
-    if (expression.kind === "NotExpression") {
+    if (expression.kind === 'NotExpression') {
       if (
-        expression.expression.kind === "LiteralExpression" &&
-        typeof expression.expression.value != "boolean"
+        expression.expression.kind === 'LiteralExpression' &&
+        typeof expression.expression.value != 'boolean'
       ) {
         throw new SyntaxError(
           `Invalid operand in NotExpression: expected boolean, received ${typeof expression.expression.value} (${expression.expression.value})`,
@@ -214,15 +214,15 @@ export default class PostgresSqlGenerator {
       return `(NOT ${expr})`;
     }
 
-    if (expression.kind === "ArrayExpression") {
+    if (expression.kind === 'ArrayExpression') {
       const expr: string[] = [];
       for (const itemExpression of expression.items) {
         expr.push(this.expressionToSql(itemExpression, alias, valuesParams));
       }
-      return ` (${expr.join(", ")})`;
+      return ` (${expr.join(', ')})`;
     }
 
-    if (expression.kind === "InExpression") {
+    if (expression.kind === 'InExpression') {
       const value = this.expressionToSql(expression.value, alias, valuesParams);
       const arrayExpression = this.expressionToSql(
         expression.arrayExpression,
@@ -233,7 +233,7 @@ export default class PostgresSqlGenerator {
       return `(${value} IN ${arrayExpression})`;
     }
 
-    const unsupportedKind = (expression as { kind?: string }).kind ?? "unknown";
+    const unsupportedKind = (expression as { kind?: string }).kind ?? 'unknown';
 
     throw new Error(
       `Unsupported expression kind for SQL generation: '${unsupportedKind}' (${JSON.stringify(expression)})`,

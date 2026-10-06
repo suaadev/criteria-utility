@@ -3,7 +3,7 @@ import {
   Criteria,
   Pagination,
   PostgresSqlGenerator,
-} from "./src/index";
+} from './src/index';
 
 type User = {
   username: string;
@@ -18,13 +18,13 @@ type User = {
 const cursor: string = CursorSerializer.encode(
   {
     id: 10,
-    username: "ddavivss",
-    createdAt: "2026-09-24 11:56:26.472 -0500",
+    username: 'ddavivss',
+    createdAt: '2026-09-24 11:56:26.472 -0500',
   },
   [
-    ["createdAt", "DESC"],
-    ["username", "ASC"],
-    ["id", "DESC"],
+    ['createdAt', 'DESC'],
+    ['username', 'ASC'],
+    ['id', 'DESC'],
   ],
 );
 
@@ -32,17 +32,17 @@ const criteria = Criteria.build<User>(
   {
     and: [
       { not: { age: { in: [1, 2, 3, 4] } } },
-      { username: { equals: "jazzz" } },
+      { username: { equals: 'jazzz' } },
     ],
   },
   Pagination.byCursor(cursor),
   [
-    ["id", "ASC"],
-    ["username", "DESC"],
+    ['id', 'ASC'],
+    ['username', 'DESC'],
   ],
   15,
 );
 
-const sql = PostgresSqlGenerator.fromCriteria(criteria, "us");
+const sql = PostgresSqlGenerator.fromCriteria(criteria, 'us');
 
 console.log(sql);

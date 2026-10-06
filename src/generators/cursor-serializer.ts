@@ -1,12 +1,12 @@
-type OperatorCondition = "<" | ">";
+type OperatorCondition = '<' | '>';
 
-type CursorSort = "ASC" | "DESC";
+type CursorSort = 'ASC' | 'DESC';
 
 type CursorPayload = [string, OperatorCondition, unknown][];
 
 export default class CursorSerializer {
   private static resolveOperator(sort: CursorSort): OperatorCondition {
-    return sort === "ASC" ? ">" : "<";
+    return sort === 'ASC' ? '>' : '<';
   }
 
   static encode<T>(object: T, fieldsToPivot: [keyof T, CursorSort][]): string {
@@ -34,13 +34,13 @@ export default class CursorSerializer {
 
     const cursorInBase64: string = Buffer.from(
       cursorPayloadInJSONFormat,
-    ).toString("base64");
+    ).toString('base64');
 
     return cursorInBase64;
   }
 
   static decode(cursor: string): CursorPayload {
-    const cursorInUtf8 = Buffer.from(cursor, "base64").toString("utf-8");
+    const cursorInUtf8 = Buffer.from(cursor, 'base64').toString('utf-8');
     const cursorPayload = JSON.parse(cursorInUtf8) as CursorPayload;
     return cursorPayload;
   }

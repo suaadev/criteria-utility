@@ -1,12 +1,7 @@
-export type LogicOperatorRaw = "and" | "or";
+export type LogicOperatorRaw = 'and' | 'or';
 
 export type ComparisonOperatorsRaw =
-  | "equals"
-  | "diff"
-  | "gt"
-  | "lt"
-  | "gte"
-  | "lte";
+  'equals' | 'diff' | 'gt' | 'lt' | 'gte' | 'lte';
 
 export type LiteralExpressionRaw = number | boolean | null | string;
 
