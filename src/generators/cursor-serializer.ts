@@ -2,25 +2,24 @@ type OperatorCondition = '<' | '>';
 
 type CursorSort = 'ASC' | 'DESC';
 
-type CursorPayload = [string, OperatorCondition, unknown][];
+type CursorCriterion = [string, OperatorCondition, unknown];
+
+type CursorPayload = CursorCriterion[];
 
 export default class CursorSerializer {
+  private constructor() {}
+
   private static resolveOperator(sort: CursorSort): OperatorCondition {
     return sort === 'ASC' ? '>' : '<';
   }
 
-  static encode<T>(object: T, fieldsToPivot: [keyof T, CursorSort][]): string {
-    const cursorPayload: Map<string, [string, OperatorCondition, unknown]> =
-      new Map();
+  static encode(fieldsToPivot: [string, unknown, CursorSort][]): string {
+    const cursorPayload: Map<string, CursorCriterion> = new Map<
+      string,
+      CursorCriterion
+    >();
 
-    for (const [field, sort] of fieldsToPivot) {
-      const value = object[field];
-      if (value === null || value === undefined) {
-        throw new Error(
-          `The value for field ${field.toString()} is invalid, received: ${value}`,
-        );
-      }
-
+    for (const [field, value, sort] of fieldsToPivot) {
       cursorPayload.set(field.toString(), [
         field.toString(),
         this.resolveOperator(sort),
