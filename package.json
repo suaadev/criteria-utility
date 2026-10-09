@@ -5,13 +5,14 @@
   "license": "MIT",
   "author": "David Suarez",
   "type": "module",
-  "main": "lib/index.ts",
+  "main": "./lib/index.js",
   "scripts": {
     "start": "npx tsx usage.ts",
     "compile": "npx tsc",
     "test": "jest --verbose --coverage",
     "format": "prettier --write --config .prettierrc ."
   },
+  "types": "./lib/index.d.ts",
   "exports": {
     ".": "./lib/index.js"
   },
