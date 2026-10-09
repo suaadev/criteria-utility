@@ -28,6 +28,9 @@ export default class Pagination<T = unknown> {
   }
 
   toObjectPlain() {
-    return this.value;
+    return {
+      page: this.value.page,
+      cursor: this.value.cursor,
+    };
   }
 }
