@@ -15,18 +15,11 @@ type User = {
 
 // The cursor is something like this, the cursor is builder in infrastructure layers like repositories implementations
 
-const cursor: string = CursorSerializer.encode(
-  {
-    id: 10,
-    username: 'ddavivss',
-    createdAt: '2026-09-24 11:56:26.472 -0500',
-  },
-  [
-    ['createdAt', 'DESC'],
-    ['username', 'ASC'],
-    ['id', 'DESC'],
-  ],
-);
+const cursor: string = CursorSerializer.encode([
+  ['createdAt', '2026-09-24 11:56:26.472 -0500', 'DESC'],
+  ['username', 'ddavivss', 'ASC'],
+  ['id', 10, 'DESC'],
+]);
 
 const criteria = Criteria.build<User>(
   {
