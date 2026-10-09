@@ -15,21 +15,21 @@ export type ComparisonExpressionRaw<T> = Partial<{
 
 export type ArrayExpressionRaw = (LiteralExpressionRaw | ArrayExpressionRaw)[];
 
-export type InExpressionRightRaw = {
+export interface InExpressionRightRaw {
   in: ArrayExpressionRaw;
-};
+}
 
 export type InExpressionRaw<T> = Partial<{
   [Key in keyof T]: InExpressionRightRaw;
 }>;
 
-export type ConditionalRaw<T> = Partial<{
-  [Key in LogicOperatorRaw]: ExpressionRaw<T>[];
-}>;
+export type ConditionalRaw<T> = Partial<
+  Record<LogicOperatorRaw, ExpressionRaw<T>[]>
+>;
 
-export type NotExpressionRaw<T> = {
+export interface NotExpressionRaw<T> {
   not: ExpressionRaw<T>;
-};
+}
 
 export type ExpressionRaw<T = Record<string, unknown>> =
   | NotExpressionRaw<T>

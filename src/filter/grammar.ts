@@ -4,45 +4,45 @@ export type LogicalOperator = '&&' | '||';
 
 export type ComparisonOperator = '==' | '!=' | '>' | '<' | '>=' | '<=';
 
-export type LiteralExpression = {
+export interface LiteralExpression {
   kind: 'LiteralExpression';
   value: LiteralExpressionValids;
-};
+}
 
-export type NotExpression = {
+export interface NotExpression {
   kind: 'NotExpression';
   expression: Expression;
-};
+}
 
-export type ComparisonExpression = {
+export interface ComparisonExpression {
   kind: 'ComparisonExpression';
   left: Expression;
   operator: ComparisonOperator;
   right: Expression;
-};
+}
 
-export type FieldExpression = {
+export interface FieldExpression {
   kind: 'FieldExpression';
   value: string;
-};
+}
 
-export type ArrayExpression = {
+export interface ArrayExpression {
   kind: 'ArrayExpression';
   items: (LiteralExpression | FieldExpression | ArrayExpression)[];
-};
+}
 
-export type InExpression = {
+export interface InExpression {
   kind: 'InExpression';
   value: FieldExpression | LiteralExpression;
   arrayExpression: ArrayExpression;
-};
+}
 
-export type LogicExpression = {
+export interface LogicExpression {
   kind: 'LogicExpression';
   left: Expression;
   operator: LogicalOperator;
   right: Expression;
-};
+}
 
 export type Expression =
   | LiteralExpression

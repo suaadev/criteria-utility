@@ -6,7 +6,7 @@ interface ValuePaginate<T> {
 export default class Pagination<T = unknown> {
   private constructor(readonly value: ValuePaginate<T>) {}
 
-  static byPage(page: number = 1) {
+  static byPage(page = 1) {
     this.validatePage(page);
     return new Pagination({
       page,
