@@ -1,5 +1,5 @@
 import { ExpressionRaw } from './filter/basic-grammar.js';
-import { FilterParser } from './filter/filter-parser.js';
+import * as FilterParser from './filter/filter-parser.js';
 import { Expression } from './filter/grammar.js';
 import Pagination from './pagination/pagination.js';
 
