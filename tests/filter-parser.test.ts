@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { FilterParser } from '../src/filter/filter-parser';
+import * as FilterParser from '../src/filter/filter-parser';
 import { ExpressionRaw } from '../src/filter/basic-grammar';
 
 describe('FilterParser', () => {

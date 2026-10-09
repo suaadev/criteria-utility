@@ -6,41 +6,37 @@ type CursorCriterion = [string, OperatorCondition, unknown];
 
 type CursorPayload = CursorCriterion[];
 
-export default class CursorSerializer {
-  private constructor() {}
+function resolveOperator(sort: CursorSort): OperatorCondition {
+  return sort === 'ASC' ? '>' : '<';
+}
 
-  private static resolveOperator(sort: CursorSort): OperatorCondition {
-    return sort === 'ASC' ? '>' : '<';
+export function encode(fieldsToPivot: [string, unknown, CursorSort][]): string {
+  const cursorPayload: Map<string, CursorCriterion> = new Map<
+    string,
+    CursorCriterion
+  >();
+
+  for (const [field, value, sort] of fieldsToPivot) {
+    cursorPayload.set(field.toString(), [
+      field.toString(),
+      resolveOperator(sort),
+      value,
+    ]);
   }
 
-  static encode(fieldsToPivot: [string, unknown, CursorSort][]): string {
-    const cursorPayload: Map<string, CursorCriterion> = new Map<
-      string,
-      CursorCriterion
-    >();
+  const cursorPayloadInJSONFormat: string = JSON.stringify(
+    Array.from(cursorPayload.values()),
+  );
 
-    for (const [field, value, sort] of fieldsToPivot) {
-      cursorPayload.set(field.toString(), [
-        field.toString(),
-        this.resolveOperator(sort),
-        value,
-      ]);
-    }
+  const cursorInBase64: string = Buffer.from(
+    cursorPayloadInJSONFormat,
+  ).toString('base64');
 
-    const cursorPayloadInJSONFormat: string = JSON.stringify(
-      Array.from(cursorPayload.values()),
-    );
+  return cursorInBase64;
+}
 
-    const cursorInBase64: string = Buffer.from(
-      cursorPayloadInJSONFormat,
-    ).toString('base64');
-
-    return cursorInBase64;
-  }
-
-  static decode(cursor: string): CursorPayload {
-    const cursorInUtf8 = Buffer.from(cursor, 'base64').toString('utf-8');
-    const cursorPayload = JSON.parse(cursorInUtf8) as CursorPayload;
-    return cursorPayload;
-  }
+export function decode(cursor: string): CursorPayload {
+  const cursorInUtf8 = Buffer.from(cursor, 'base64').toString('utf-8');
+  const cursorPayload = JSON.parse(cursorInUtf8) as CursorPayload;
+  return cursorPayload;
 }
