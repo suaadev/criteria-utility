@@ -6,7 +6,7 @@ export type ComparisonOperatorsRaw =
 export type LiteralExpressionRaw = number | boolean | null | string;
 
 export type ComparisonExpressionRightRaw<T> = Partial<{
-  [K_ in ComparisonOperatorsRaw]: ExpressionRaw<T>;
+  [K in ComparisonOperatorsRaw]: ExpressionRaw<T>;
 }>;
 
 export type ComparisonExpressionRaw<T> = Partial<{

@@ -1,7 +1,7 @@
 import { ExpressionRaw } from './filter/basic-grammar.js';
 import * as FilterParser from './filter/filter-parser.js';
 import { Expression } from './filter/grammar.js';
-import Pagination from './pagination/pagination.js';
+import Pagination from './pagination.js';
 
 export type Sort = 'ASC' | 'DESC';
 
@@ -18,19 +18,23 @@ export class Criteria {
   }
 
   static build<T>(
-    filterExpression?: ExpressionRaw<T> | null,
+    filterExpression?: ExpressionRaw<T> | Record<string, unknown> | null,
     pagination?: Pagination | null,
-    orderBy?: [string, Sort][] | null,
+    orderBy?: ([keyof T, Sort] | [string, Sort])[] | null,
     limit?: number | null,
   ) {
     const expressionParsed = filterExpression
       ? FilterParser.parse(filterExpression)
       : null;
 
+    const orderBy_ = new Map<string, Sort>(
+      (orderBy ?? []).map((m) => [String(m[0]), m[1]]),
+    );
+
     return new Criteria(
       expressionParsed,
       pagination ?? null,
-      new Map(orderBy ?? []),
+      orderBy_,
       limit ?? null,
     );
   }
