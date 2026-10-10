@@ -5,37 +5,26 @@ import {
   PostgresSqlGenerator,
 } from './src/index';
 
-type User = {
-  username: string;
-  email: string;
-  password: string;
-  age: number;
-  createdAt: string;
+type Book = {
+  id: number;
+  name: string;
+  author: string;
+  rate: number;
+  publicationDate: Date;
 };
 
-// The cursor is something like this, the cursor is builder in infrastructure layers like repositories implementations
-
-const cursor: string = CursorSerializer.encode([
-  ['createdAt', '2026-09-24 11:56:26.472 -0500', 'DESC'],
-  ['username', 'ddavivss', 'ASC'],
-  ['id', 10, 'DESC'],
-]);
-
-const criteria = Criteria.build<User>(
+const criteria = Criteria.build<Book>(
   {
-    and: [
-      { not: { age: { in: [1, 2, 3, 4] } } },
-      { username: { equals: 'jazzz' } },
-    ],
+    and: [{ rate: { gte: 4 } }, { publicationDate: { gte: '1911-01-01' } }],
   },
-  Pagination.byCursor(cursor),
+  Pagination.byPage(22),
   [
-    ['id', 'ASC'],
-    ['username', 'DESC'],
+    ['publicationDate', 'DESC'],
+    ['name', 'ASC'],
   ],
   15,
 );
 
-const sql = PostgresSqlGenerator.fromCriteria(criteria, 'us');
+const sql = PostgresSqlGenerator.fromCriteria(criteria, 'bk');
 
 console.log(sql);
