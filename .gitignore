@@ -3,3 +3,6 @@ coverage/
 dist/
 *lock*
 lib/
+*.tgz
+.vscode
+
