@@ -27,15 +27,22 @@ export class Criteria {
       ? FilterParser.parse(filterExpression)
       : null;
 
-    const orderBy_ = new Map<string, Sort>(
+    const orderBySanitized = new Map<string, Sort>(
       (orderBy ?? []).map((m) => [String(m[0]), m[1]]),
     );
 
+    const limitSanitized: number | null = Number.isFinite(limit)
+      ? Number(limit)
+      : null;
+
+    const paginationSanitized: Pagination | null =
+      pagination && Number.isFinite(limit) ? pagination : null;
+
     return new Criteria(
       expressionParsed,
-      pagination ?? null,
-      orderBy_,
-      limit ?? null,
+      paginationSanitized,
+      orderBySanitized,
+      limitSanitized,
     );
   }
 
