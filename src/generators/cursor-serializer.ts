@@ -1,8 +1,8 @@
-type CursorSort = 'ASC' | 'DESC';
+export type CursorSort = 'ASC' | 'DESC';
 
-type CursorCriterion = [string, unknown, CursorSort];
+export type CursorCriterion = [string, unknown, CursorSort];
 
-type CursorPayload = CursorCriterion[];
+export type CursorPayload = CursorCriterion[];
 
 function isUndefinedOrNull(value: unknown) {
   return value === undefined || value === null;
@@ -14,8 +14,9 @@ export function encode(fieldsToPivot: [string, unknown, CursorSort][]): string {
     CursorCriterion
   >();
 
+  validateCursorPayload(fieldsToPivot);
+
   for (const criterion of fieldsToPivot) {
-    validateCursorCriterion(criterion);
     const [field, value, sort] = criterion;
     cursorPayload.set(field.toString(), [field.toString(), value, sort]);
   }
