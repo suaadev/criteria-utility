@@ -137,7 +137,7 @@ describe('FilterParser', () => {
       expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
     });
 
-    it('should parse an equals expression', () => {
+    it('should parse an equals expression with an array operand', () => {
       const badExpression = {
         phoneNumbers: { equals: ['+56 30000000', '+51 70000000'] },
       };
@@ -152,7 +152,7 @@ describe('FilterParser', () => {
       });
     });
 
-    it('should parse an equals expression', () => {
+    it('should parse an equals expression with a literal operand', () => {
       const badExpression = {
         genere: { equals: 'techno' },
       };
@@ -230,7 +230,7 @@ describe('FilterParser', () => {
       });
     });
 
-    it('should throw SyntaxError when a field is not a valid operator', () => {
+    it('should throw SyntaxError when an invalid operator is provided', () => {
       const badExpression = {
         age: { badOperator: {} },
       };
@@ -323,7 +323,7 @@ describe('FilterParser', () => {
       );
     });
 
-    it('should throw SyntaxError when is array is invalid', () => {
+    it('should throw SyntaxError when in array contains an invalid nested element', () => {
       const badExpression = {
         some: { in: [1, [1, 2, 1, 1, {}]] },
       };
@@ -333,7 +333,7 @@ describe('FilterParser', () => {
       );
     });
 
-    it('should throw SyntaxError when in array are not valid expression', () => {
+    it('should throw SyntaxError when in array contains invalid expressions', () => {
       const badExpression = {
         some: { in: [() => {}, { user: 'daaa' }] },
       };
@@ -358,7 +358,7 @@ describe('FilterParser', () => {
       });
     });
 
-    it('should parse a valid in expression with a field and array expression into an array expression', () => {
+    it('should parse a valid in expression containing nested array and field expressions', () => {
       const expression: ExpressionRaw<{}> = {
         cat: { in: ['dog', '$animal', ['$dog', ['duck']]] },
       };
@@ -397,7 +397,7 @@ describe('FilterParser', () => {
   });
 
   describe('field identifier expressions', () => {
-    it('should parse a field expression as target of an in operator', () => {
+    it('should parse a field identifier as the target of an in operator', () => {
       const expression: ExpressionRaw = {
         cat: { in: ['dog', 'cat'] },
       };
@@ -431,7 +431,7 @@ describe('FilterParser', () => {
       expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
     });
 
-    it('should throw SyntaxError when field reference starts with numbers after dollar', () => {
+    it('should throw SyntaxError when field reference starts with a digit after dollar sign', () => {
       const expression: ExpressionRaw = {
         username: { equals: '$123sda' },
       };
