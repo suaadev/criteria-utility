@@ -1,10 +1,10 @@
-import { CursorSerializer } from './src/cursor-serializers/cursor-serializer';
 import {
   Criteria,
   CursorBase64Serializer,
+  CursorSerializer,
   Pagination,
   PostgresSqlGenerator,
-} from './src/index';
+} from './src/index.js';
 import { CursorPayload } from './src/pagination';
 
 type Book = {
