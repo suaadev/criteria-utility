@@ -1,9 +1,11 @@
 import {
-  CursorSerializer,
   Criteria,
+  CursorBase64Serializer,
+  CursorSerializer,
   Pagination,
   PostgresSqlGenerator,
-} from './src/index';
+} from './src/index.js';
+import { CursorPayload } from './src/pagination';
 
 type Book = {
   id: number;
@@ -13,14 +15,24 @@ type Book = {
   publicationDate: Date;
 };
 
+const cursorBase64Serializer: CursorSerializer<CursorPayload, string> =
+  new CursorBase64Serializer();
+
+const cursorInBase64: string = cursorBase64Serializer.encode([
+  ['publicationDate', '1911-01-01', 'DESC'],
+  ['name', 'test', 'ASC'],
+  ['id', 10, 'DESC'],
+]);
+
 const criteria = Criteria.build<Book>(
   {
     and: [{ rate: { gte: 4 } }, { publicationDate: { gte: '1911-01-01' } }],
   },
-  Pagination.byPage(22),
+  Pagination.byCursor(cursorInBase64),
   [
     ['publicationDate', 'DESC'],
     ['name', 'ASC'],
+    ['id', 'DESC'],
   ],
   15,
 );

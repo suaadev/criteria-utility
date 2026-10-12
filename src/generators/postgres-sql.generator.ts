@@ -1,6 +1,6 @@
 import { Criteria, Sort } from '../criteria.js';
 import * as grammar from '../filter/grammar.js';
-import * as CursorSerializer from './cursor-serializer.js';
+import { CursorPayload } from '../pagination.js';
 
 const mapComparisonOperatorsToSql: Record<grammar.ComparisonOperator, string> =
   {
@@ -33,20 +33,20 @@ export function fromCriteria(criteria: Criteria, alias = '') {
 
   const whereStatements: string[] = [];
 
-  let orderByFields: string[] = orderBy.map(
-    ([field, sort]) => `${buildFieldWithAlias(field, alias)} ${sort}`,
-  );
-
   if (filterExpression) {
     whereStatements.push(
       expressionToSql(filterExpression, alias, valuesParams),
     );
   }
 
+  let orderByFields: string[] = orderBy.map(
+    ([field, sort]) => `${buildFieldWithAlias(field, alias)} ${sort}`,
+  );
+
   let offset: number | null = null;
 
   if (Number.isFinite(limit) && pagination) {
-    if (typeof pagination.cursor === 'string') {
+    if (Array.isArray(pagination.cursor)) {
       const cursorStatements = buildCursorStatements(
         pagination.cursor,
         valuesParams,
@@ -180,17 +180,15 @@ function expressionToSql(
 }
 
 function buildCursorStatements(
-  cursor: string,
+  cursor: CursorPayload,
   valuesParams: unknown[],
   alias = '',
 ) {
-  const fields = CursorSerializer.decode(cursor);
-
   const orderByFields = [];
 
   const fieldsWithParams: [string, string, string][] = [];
 
-  for (const [fieldName, value, sort] of fields) {
+  for (const [fieldName, value, sort] of cursor) {
     const fieldNameWithAlias = buildFieldWithAlias(fieldName, alias);
 
     valuesParams.push(value);
