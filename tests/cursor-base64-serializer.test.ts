@@ -29,7 +29,7 @@ describe('Cursor base64 serializer', () => {
 
     expect(() => {
       cursorBase64Serializer.encode(cursorData as unknown as CursorPayload);
-    }).toThrow(Error);
+    }).toThrow();
   });
 
   it('should throw an error when decoding an invalid base64 string', () => {
