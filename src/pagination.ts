@@ -1,5 +1,5 @@
 import { CursorBase64Serializer } from './cursor-serializers/cursor-base64-serializer.js';
-import { CursorSerializer } from './cursor-serializers/cursor-serializer.js';
+import type { CursorSerializer } from './cursor-serializers/cursor-serializer.js';
 
 export type CursorSort = 'ASC' | 'DESC';
 
@@ -7,25 +7,20 @@ export type CursorCriterion = [string, unknown, CursorSort];
 
 export type CursorPayload = CursorCriterion[];
 
-export interface ValuePaginate {
-  page: number | null;
-  cursor: CursorPayload | null;
-}
-
 export default class Pagination {
-  private constructor(readonly value: ValuePaginate) {}
+  private constructor(
+    readonly page: number | null,
+    readonly cursor: CursorPayload | null,
+  ) {}
 
   static byPage(page = 1) {
     this.validatePage(page);
-    return new Pagination({
-      page,
-      cursor: null,
-    });
+    return new Pagination(page, null);
   }
 
   static validatePage(page: number) {
-    if (page < 1) {
-      throw new Error('Page must be an integer greater than or equal to 1');
+    if (!Number.isInteger(page) || page < 1) {
+      throw new Error('Page must be an integer greater than or equal to 1.');
     }
   }
 
@@ -37,10 +32,7 @@ export default class Pagination {
 
     this.validateCursorPayload(decodeCursor);
 
-    return new Pagination({
-      page: null,
-      cursor: decodeCursor,
-    });
+    return new Pagination(null, decodeCursor);
   }
 
   private static isUndefinedOrNull(value: unknown) {
@@ -76,8 +68,8 @@ export default class Pagination {
 
   toObjectPlain() {
     return {
-      page: this.value.page,
-      cursor: this.value.cursor,
+      page: this.page,
+      cursor: this.cursor,
     };
   }
 }
