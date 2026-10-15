@@ -1,28 +1,12 @@
 import { CursorSerializer } from '../cursor-serializers/cursor-serializer.js';
-import { CursorCriterion, CursorPayload } from '../pagination.js';
+import { CursorPayload } from '../pagination.js';
 
 export class CursorBase64Serializer implements CursorSerializer<
   CursorPayload,
   string
 > {
   encode(cursorPayload: CursorPayload): string {
-    const cursorPayloadSanitized: Map<string, CursorCriterion> = new Map<
-      string,
-      CursorCriterion
-    >();
-
-    for (const criterion of cursorPayload) {
-      const [field, value, sort] = criterion;
-      cursorPayloadSanitized.set(field.toString(), [
-        field.toString(),
-        value,
-        sort,
-      ]);
-    }
-
-    const cursorPayloadInJSONFormat: string = JSON.stringify(
-      Array.from(cursorPayloadSanitized.values()),
-    );
+    const cursorPayloadInJSONFormat: string = JSON.stringify(cursorPayload);
 
     const cursorInBase64: string = Buffer.from(
       cursorPayloadInJSONFormat,
