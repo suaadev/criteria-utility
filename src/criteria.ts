@@ -8,13 +8,17 @@ export type Sort = 'ASC' | 'DESC';
 export type OrderBy = Map<string, Sort>;
 
 export class Criteria {
+  private orderBy_: OrderBy;
+
   private constructor(
     readonly filterExpression: Expression | null,
     public pagination: Pagination | null,
-    public orderBy: OrderBy,
+    orderBy: [unknown, Sort][],
     private limit_: number | null,
   ) {
-    this.validateLimit(this.limit ?? 1);
+    this.validateLimit(limit_);
+    this.validatePaginationIntegrity(pagination, limit_);
+    this.orderBy_ = this.validateOrderBy(orderBy);
   }
 
   static build<T>(
@@ -27,35 +31,63 @@ export class Criteria {
       ? FilterParser.parse(filterExpression)
       : null;
 
-    const orderBySanitized = new Map<string, Sort>(
-      (orderBy ?? []).map((m) => [String(m[0]), m[1]]),
-    );
-
-    const limitSanitized: number | null = Number.isFinite(limit)
-      ? Number(limit)
-      : null;
-
-    const paginationSanitized: Pagination | null =
-      pagination && Number.isFinite(limit) ? pagination : null;
-
     return new Criteria(
       expressionParsed,
-      paginationSanitized,
-      orderBySanitized,
-      limitSanitized,
+      pagination ?? null,
+      orderBy ?? [],
+      limit ?? null,
     );
   }
 
-  private validateLimit(limit: number) {
-    if (!Number.isFinite(limit) || limit < 1) {
+  private validateOrderBy(orderBy: [unknown, Sort][]): OrderBy {
+    if (!Array.isArray(orderBy)) {
+      throw new Error('The orderBy must be a Array');
+    }
+
+    const orderBySanitized: OrderBy = new Map<string, Sort>([]);
+
+    for (const criterion of orderBy) {
+      if (!Array.isArray(criterion)) {
+        throw new Error('The criterio of orderBy must be a array.');
+      }
+
+      const [field, sort] = criterion;
+
+      if (sort !== 'DESC' && sort !== 'ASC') {
+        throw new Error('The sort value must be ASC or DESC');
+      }
+      if (typeof field !== 'string') {
+        throw new Error('The field order must be a string.');
+      }
+      orderBySanitized.set(field, sort);
+    }
+
+    return orderBySanitized;
+  }
+
+  private validatePaginationIntegrity(
+    pagination: Pagination | null,
+    limit: number | null,
+  ) {
+    if (pagination !== null && !(pagination instanceof Pagination)) {
       throw new Error(
-        'Limit must be a finite integer greater than or equal to 1',
+        'The pagination must be a object of the type Pagination.',
       );
+    }
+
+    if (pagination !== null && !Number.isInteger(limit)) {
+      throw new Error('To apply pagination you must to provide a limit.');
+    }
+  }
+
+  private validateLimit(limit: number | null) {
+    if (limit !== null && (!Number.isInteger(limit) || limit < 1)) {
+      throw new Error('Limit must be a integer greater than or equal to 1.');
     }
   }
 
   set limit(limit: number | null) {
-    this.validateLimit(limit ?? 1);
+    this.validateLimit(limit);
     this.limit_ = limit;
   }
 
@@ -63,11 +95,19 @@ export class Criteria {
     return this.limit_;
   }
 
+  set orderBy(orderBy: [string, Sort][]) {
+    this.orderBy_ = this.validateOrderBy(orderBy);
+  }
+
+  get orderBy(): [string, Sort][] {
+    return Array.from(this.orderBy_.entries());
+  }
+
   toObjectPlain() {
     return {
       filterExpression: this.filterExpression,
       pagination: this.pagination?.toObjectPlain() ?? null,
-      orderBy: Array.from(this.orderBy.entries()),
+      orderBy: this.orderBy,
       limit: this.limit,
     };
   }
