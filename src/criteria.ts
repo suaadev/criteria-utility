@@ -5,34 +5,36 @@ import Pagination from './pagination.js';
 
 export type Sort = 'ASC' | 'DESC';
 
-export type OrderBy = Map<string, Sort>;
+type OrderBy = Map<string, Sort>;
+
+export interface criteriaOptions<T> {
+  filter?: ExpressionRaw<T> | Record<string, unknown> | null;
+  pagination?: Pagination | null;
+  orderBy?: ([keyof T, Sort] | [string, Sort])[] | null;
+  limit?: number | null;
+}
 
 export class Criteria {
   private orderBy_: OrderBy;
 
   private constructor(
     readonly filterExpression: Expression | null,
-    public pagination: Pagination | null,
+    private pagination_: Pagination | null,
     orderBy: [unknown, Sort][],
     private limit_: number | null,
   ) {
     this.validateLimit(limit_);
-    this.validatePaginationIntegrity(pagination, limit_);
+    this.validatePaginationIntegrity(pagination_, limit_);
     this.orderBy_ = this.validateOrderBy(orderBy);
   }
 
-  static build<T>(
-    filterExpression?: ExpressionRaw<T> | Record<string, unknown> | null,
-    pagination?: Pagination | null,
-    orderBy?: ([keyof T, Sort] | [string, Sort])[] | null,
-    limit?: number | null,
-  ) {
-    const expressionParsed = filterExpression
-      ? FilterParser.parse(filterExpression)
-      : null;
+  static build<T>(criteriaOptions: criteriaOptions<T> = {}) {
+    const { filter, limit, orderBy, pagination } = criteriaOptions;
+
+    const filterExpression = filter ? FilterParser.parse(filter) : null;
 
     return new Criteria(
-      expressionParsed,
+      filterExpression,
       pagination ?? null,
       orderBy ?? [],
       limit ?? null,
@@ -49,6 +51,12 @@ export class Criteria {
     for (const criterion of orderBy) {
       if (!Array.isArray(criterion)) {
         throw new Error('The criterio of orderBy must be a array.');
+      }
+
+      if (criterion.length !== 2) {
+        throw new Error(
+          'The criterion must contain only two elements, field and sort.',
+        );
       }
 
       const [field, sort] = criterion;
@@ -88,6 +96,7 @@ export class Criteria {
 
   set limit(limit: number | null) {
     this.validateLimit(limit);
+    this.validatePaginationIntegrity(this.pagination_, limit);
     this.limit_ = limit;
   }
 
@@ -101,6 +110,15 @@ export class Criteria {
 
   get orderBy(): [string, Sort][] {
     return Array.from(this.orderBy_.entries());
+  }
+
+  set pagination(pagination: Pagination | null) {
+    this.validatePaginationIntegrity(pagination, this.limit_);
+    this.pagination_ = pagination;
+  }
+
+  get pagination(): Pagination | null {
+    return this.pagination_;
   }
 
   toObjectPlain() {
