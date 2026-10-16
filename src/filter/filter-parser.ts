@@ -24,7 +24,7 @@ const mapLogicOperator: Record<
 const idExpressionRegex = /^\$[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 export function parse<T>(
-  input: basicGrammar.ExpressionRaw<T> = null,
+  input: basicGrammar.ExpressionRaw<T>,
 ): grammar.Expression {
   // Field expressions
   if (typeof input === 'string' && input.charAt(0) === '$') {
