@@ -45,7 +45,7 @@ export function fromCriteria(criteria: Criteria, alias = '') {
 
   let offset: number | null = null;
 
-  if (Number.isFinite(limit) && pagination) {
+  if (Number.isInteger(limit) && pagination) {
     if (Array.isArray(pagination.cursor)) {
       const cursorStatements = buildCursorStatements(
         pagination.cursor,
@@ -54,7 +54,7 @@ export function fromCriteria(criteria: Criteria, alias = '') {
       );
       orderByFields = cursorStatements.orderByFields;
       whereStatements.push(cursorStatements.where);
-    } else if (Number.isFinite(pagination.page)) {
+    } else if (Number.isInteger(pagination.page)) {
       offset = ((pagination.page as number) - 1) * (limit as number);
     }
   }
@@ -67,8 +67,8 @@ export function fromCriteria(criteria: Criteria, alias = '') {
     whereStatements.length > 0 ? 'WHERE' : '',
     whereStatement,
     orderByFields.length > 0 ? `ORDER BY ${orderByStatement}` : '',
-    Number.isFinite(offset) ? `OFFSET ${offset}` : '',
-    Number.isFinite(limit) ? `LIMIT ${limit}` : '',
+    Number.isInteger(offset) ? `OFFSET ${offset}` : '',
+    Number.isInteger(limit) ? `LIMIT ${limit}` : '',
   ]
     .join(' ')
     .trim();
