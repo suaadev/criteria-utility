@@ -25,7 +25,7 @@ const validsExpInLogicExp = [
   'InExpression',
 ];
 
-export function fromCriteria(criteria: Criteria, alias = '') {
+export function fromCriteria<T>(criteria: Criteria<T>, alias = '') {
   const { filterExpression, limit, orderBy, pagination } =
     criteria.toObjectPlain();
 
