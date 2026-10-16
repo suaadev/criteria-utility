@@ -5,22 +5,24 @@ import Pagination from './pagination.js';
 
 export type Sort = 'ASC' | 'DESC';
 
-type OrderBy = Map<string, Sort>;
+export type OrderByRaw<T> = ([keyof T, Sort] | [string, Sort])[];
 
-export interface criteriaOptions<T> {
+type OrderBy<T> = Map<keyof T | string, Sort>;
+
+export interface CriteriaOptions<T> {
   filter?: ExpressionRaw<T> | Record<string, unknown> | null;
   pagination?: Pagination | null;
-  orderBy?: ([keyof T, Sort] | [string, Sort])[] | null;
+  orderBy?: OrderByRaw<T> | null;
   limit?: number | null;
 }
 
-export class Criteria {
-  private orderBy_: OrderBy;
+export class Criteria<T = unknown> {
+  private orderBy_: OrderBy<T>;
 
   private constructor(
     readonly filterExpression: Expression | null,
     private pagination_: Pagination | null,
-    orderBy: [unknown, Sort][],
+    orderBy: OrderByRaw<T>,
     private limit_: number | null,
   ) {
     this.validateLimit(limit_);
@@ -28,12 +30,12 @@ export class Criteria {
     this.orderBy_ = this.validateOrderBy(orderBy);
   }
 
-  static build<T>(criteriaOptions: criteriaOptions<T> = {}) {
+  static build<T>(criteriaOptions: CriteriaOptions<T> = {}) {
     const { filter, limit, orderBy, pagination } = criteriaOptions;
 
     const filterExpression = filter ? FilterParser.parse(filter) : null;
 
-    return new Criteria(
+    return new Criteria<T>(
       filterExpression,
       pagination ?? null,
       orderBy ?? [],
@@ -41,12 +43,12 @@ export class Criteria {
     );
   }
 
-  private validateOrderBy(orderBy: [unknown, Sort][]): OrderBy {
+  private validateOrderBy(orderBy: OrderByRaw<T>): OrderBy<T> {
     if (!Array.isArray(orderBy)) {
       throw new Error('The orderBy must be a Array');
     }
 
-    const orderBySanitized: OrderBy = new Map<string, Sort>([]);
+    const orderBySanitized: OrderBy<T> = new Map<string, Sort>([]);
 
     for (const criterion of orderBy) {
       if (!Array.isArray(criterion)) {
@@ -104,11 +106,11 @@ export class Criteria {
     return this.limit_;
   }
 
-  set orderBy(orderBy: [string, Sort][]) {
+  set orderBy(orderBy: OrderByRaw<T>) {
     this.orderBy_ = this.validateOrderBy(orderBy);
   }
 
-  get orderBy(): [string, Sort][] {
+  get orderBy(): [string | keyof T, Sort][] {
     return Array.from(this.orderBy_.entries());
   }
 
