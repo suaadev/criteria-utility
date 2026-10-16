@@ -28,7 +28,7 @@ describe('Cursor base64 serializer', () => {
     const cursorData = () => {};
 
     expect(() => {
-      cursorBase64Serializer.encode(cursorData as unknown as CursorPayload);
+      cursorBase64Serializer.encode(cursorData as any);
     }).toThrow();
   });
 
@@ -40,7 +40,7 @@ describe('Cursor base64 serializer', () => {
 
   it('should throw an error when cursor is not a string', () => {
     expect(() => {
-      const cursor = null as unknown as string;
+      const cursor = null as any;
       cursorBase64Serializer.decode(cursor);
     }).toThrow(Error);
   });
