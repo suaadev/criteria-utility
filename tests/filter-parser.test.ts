@@ -33,13 +33,13 @@ describe('FilterParser', () => {
       const badExpression = {
         wrongKey: [1, 2],
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
 
     it('should parse null as a LiteralExpression', () => {
-      const badExpression = null as unknown as ExpressionRaw;
+      const badExpression = null as any;
       expect(FilterParser.parse(badExpression)).toMatchObject({
         kind: 'LiteralExpression',
         value: null,
@@ -75,7 +75,7 @@ describe('FilterParser', () => {
       const badExpression = {
         and: {},
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -84,9 +84,9 @@ describe('FilterParser', () => {
       const badExpression = {
         and: null,
       };
-      expect(() =>
-        FilterParser.parse(badExpression as unknown as ExpressionRaw),
-      ).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
+        SyntaxError,
+      );
     });
 
     it('should parse an or expression with multiple conditions', () => {
@@ -171,7 +171,7 @@ describe('FilterParser', () => {
       const badExpression = {
         age: { gt: 10, lt: 20 },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -180,7 +180,7 @@ describe('FilterParser', () => {
       const badExpression = {
         some: { lt: {} },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -189,7 +189,7 @@ describe('FilterParser', () => {
       const badExpression = {
         1: { gt: () => {} },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -200,7 +200,7 @@ describe('FilterParser', () => {
           gt: {},
         },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -210,7 +210,7 @@ describe('FilterParser', () => {
         cat: { diff: [() => {}, undefined] },
       };
 
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -234,7 +234,7 @@ describe('FilterParser', () => {
       const badExpression = {
         age: { badOperator: {} },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -252,7 +252,7 @@ describe('FilterParser', () => {
       const badExpression = {
         not: () => {},
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -261,7 +261,7 @@ describe('FilterParser', () => {
       const badExpression = {
         not: null,
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -290,7 +290,7 @@ describe('FilterParser', () => {
       const badExpression = {
         role: { in: [] },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -299,7 +299,7 @@ describe('FilterParser', () => {
       const badExpression = {
         in: [() => {}, null],
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -308,7 +308,7 @@ describe('FilterParser', () => {
       const badExpression = {
         role: { in: [{ and: [true, true] }] },
       };
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -318,7 +318,7 @@ describe('FilterParser', () => {
         in: [{ and: [true, true] }, [1, 2]],
       };
 
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -328,7 +328,7 @@ describe('FilterParser', () => {
         some: { in: [1, [1, 2, 1, 1, {}]] },
       };
 
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });
@@ -338,7 +338,7 @@ describe('FilterParser', () => {
         some: { in: [() => {}, { user: 'daaa' }] },
       };
 
-      expect(() => FilterParser.parse(badExpression as ExpressionRaw)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         SyntaxError,
       );
     });

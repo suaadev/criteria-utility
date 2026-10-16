@@ -5,13 +5,11 @@ import { CursorSerializer } from '../src/cursor-serializers/cursor-serializer';
 describe('Pagination', () => {
   describe('Pagination by page', () => {
     it('should throw an error when page is null', () => {
-      expect(() => Pagination.byPage(null as unknown as number)).toThrow(Error);
+      expect(() => Pagination.byPage(null as any)).toThrow(Error);
     });
 
     it('should throw an error when page is an object', () => {
-      expect(() =>
-        Pagination.byPage({ test: 'test' } as unknown as number),
-      ).toThrow(Error);
+      expect(() => Pagination.byPage({ test: 'test' } as any)).toThrow(Error);
     });
 
     it('should throw an error when page is zero', () => {
