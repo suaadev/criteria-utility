@@ -3,11 +3,11 @@ import * as FilterParser from './filter/filter-parser.js';
 import { Expression } from './filter/grammar.js';
 import Pagination from './pagination.js';
 
+type OrderBy = Map<string, Sort>;
+
 export type Sort = 'ASC' | 'DESC';
 
 export type OrderByRaw<T> = ([keyof T, Sort] | [string, Sort])[];
-
-type OrderBy<T> = Map<keyof T | string, Sort>;
 
 export interface CriteriaOptions<T> {
   filter?: ExpressionRaw<T> | Record<string, unknown> | null;
@@ -17,7 +17,7 @@ export interface CriteriaOptions<T> {
 }
 
 export class Criteria<T = unknown> {
-  private orderBy_: OrderBy<T>;
+  private orderBy_: OrderBy;
 
   private constructor(
     readonly filterExpression: Expression | null,
@@ -43,12 +43,12 @@ export class Criteria<T = unknown> {
     );
   }
 
-  private validateOrderBy(orderBy: OrderByRaw<T>): OrderBy<T> {
+  private validateOrderBy(orderBy: OrderByRaw<T>): OrderBy {
     if (!Array.isArray(orderBy)) {
       throw new Error('The orderBy must be a Array');
     }
 
-    const orderBySanitized: OrderBy<T> = new Map<string, Sort>([]);
+    const orderBySanitized: OrderBy = new Map<string, Sort>([]);
 
     for (const criterion of orderBy) {
       if (!Array.isArray(criterion)) {
@@ -110,7 +110,7 @@ export class Criteria<T = unknown> {
     this.orderBy_ = this.validateOrderBy(orderBy);
   }
 
-  get orderBy(): [string | keyof T, Sort][] {
+  get orderBy(): [string, Sort][] {
     return Array.from(this.orderBy_.entries());
   }
 
