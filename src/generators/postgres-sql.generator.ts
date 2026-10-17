@@ -158,7 +158,7 @@ function expressionToSql(
     for (const itemExpression of expression.items) {
       expr.push(expressionToSql(itemExpression, alias, valuesParams));
     }
-    return ` (${expr.join(', ')})`;
+    return `(${expr.join(', ')})`;
   }
 
   if (expression.kind === 'InExpression') {
