@@ -14,8 +14,8 @@
 interface UserRepository {
   save(user: User): Promise<void>;
   delete(user: User): Promise<void>;
-  findOne(criteria: Criteria): Promise<User | null>;
-  findAll(criteria?: Criteria): Promise<User[]>;
+  findOne(criteria: Criteria<User>): Promise<User | null>;
+  findAll(criteria?: Criteria<User>): Promise<User[]>;
 }
 
 class UserPostgresRepository implements UserRepository {
@@ -27,12 +27,12 @@ class UserPostgresRepository implements UserRepository {
     // some code here...
   }
 
-  async findOne(criteria: Criteria): Promise<User | null> {
+  async findOne(criteria: Criteria<User>): Promise<User | null> {
     // some code here...
     return null;
   }
 
-  async findAll(criteria?: Criteria): Promise<User[]> {
+  async findAll(criteria?: Criteria<User>): Promise<User[]> {
     // some code here...
     return [];
   }
@@ -49,26 +49,24 @@ Para empezar a usar la librería, debes importar la clase `Criteria` como en el 
 import { Criteria } from 'criteria-utility';
 
 const criteria = Criteria.build({
-  or: [
-    {
-      username: { equals: 'daana' },
-    },
-    {
-      username: { equals: 'blasteer' },
-    },
-  ],
+  filter: {
+    or: [
+      {
+        username: { equals: 'daana' },
+      },
+      {
+        username: { equals: 'blasteer' },
+      },
+    ],
+  },
 });
 
 const user: User | null = await userRepository.findOne(criteria);
 ```
 
-> Obtiene un usuario donde el username puede ser **"daana"** o **"blasteer"**.
-
-La clase `Criteria` consta de un método estático `build` para instanciar de manera rápida y sencilla un objeto de tipo `Criteria`. Este método recibe la expresión, paginación, orden y límite.
-
 ### Expresiones
 
-Armar criterios de búsqueda es muy intuitivo. Si ya has trabajado con `MongoDB`, te vas a sentir como en casa, ya que la sintaxis sigue una idea muy parecida para que no tengas que aprender todo desde cero. Aquí tienes las operaciones que puedes usar:
+Armar criterios de búsqueda es muy intuitivo. Si ya has trabajado con [MongoDB](https://github.com/mongodb/mongo), te vas a sentir como en casa, ya que la sintaxis sigue una idea muy parecida para que no tengas que aprender todo desde cero. Aquí tienes las operaciones que puedes usar:
 
 #### Operaciones
 
@@ -80,25 +78,25 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 
 ```json
 {
-  "<field or value>": { "<operator>": "<field or value or expression>" }
+  "<field>": { "<operator>": "<field or value or expression>" }
 }
 ```
 
 | Operador |                   Descripción                   |
 | :------: | :---------------------------------------------: |
+|  equals  |      Compara que un valor sea igual a otro      |
 |   diff   |    Compara que un valor sea diferente a otro    |
 |   gte    | Compara que un valor sea mayor o igual que otro |
 |    gt    |     Compara que un valor sea mayor que otro     |
 |   lte    | Compara que un valor sea menor o igual que otro |
 |    lt    |     Compara que un valor sea menor que otro     |
-|  equals  |      Compara que un valor sea igual a otro      |
 
 **Ejemplos:**
 
 ```typescript
 {
   email: {
-    equals: 'pepito@example.com';
+    equals: 'wtf@example.com'
   }
 }
 ```
@@ -123,8 +121,8 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 
 | Operador |                    Descripción                     |
 | :------: | :------------------------------------------------: |
-|    or    | Evalúa que alguna de las condiciones sea verdadera |
 |   and    |  Evalúa que todas las condiciones sean verdaderas  |
+|    or    | Evalúa que alguna de las condiciones sea verdadera |
 
 **Ejemplos:**
 
@@ -137,8 +135,8 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 ```typescript
 {
   or: [
-    { username: { equals: 'gasly' } },
-    { username: { equals: 'hammilton' } },
+    { username: { equals: 'torlvals' } },
+    { username: { equals: 'robCMartin' } },
   ];
 }
 ```
@@ -147,8 +145,8 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 
 | Operador |                       Descripción                       |
 | :------: | :-----------------------------------------------------: |
-|    in    | Evalúa si un valor se encuentra en una lista de valores |
 |   not    |                   Niega una expresión                   |
+|    in    | Evalúa si un valor se encuentra en una lista de valores |
 
 **Ejemplos:**
 
@@ -171,73 +169,92 @@ También puedes decidir cómo quieres paginar tus resultados aplicando estrategi
 ```typescript
 import { Criteria, Pagination } from 'criteria-utility';
 
-const criteria = Criteria.build(
-  {
+const criteria = Criteria.build({
+  filter: {
     age: {
       gte: 18,
     },
   },
-  Pagination.byPage(3),
-  [
+  pagination: Pagination.byPage(3),
+  orderBy: [
     ['id', 'DESC'],
     ['age', 'ASC'],
   ],
-  15, // Límite de resultados por página
-);
+  limit: 15,
+});
 
 const users = await userRepository.findAll(criteria);
 ```
 
-> **Nota:** Si se especifica una paginación sin un `limit`, la paginación será ignorada. La paginación requiere obligatoriamente un tamaño de página (`limit`) para operar: en la paginación por página es necesario para calcular el desplazamiento (`OFFSET = (page - 1) * limit`), y en la paginación por cursor delimita el tamaño del lote a recuperar.
+> [!CAUTION]
+> Si se especifica una paginación sin un `limit`, `Criteria` lanzará una excepción indicando que la paginación requiere obligatoriamente un tamaño de página (`limit`) para operar: en la paginación por página es necesario para calcular el desplazamiento (`OFFSET = (page - 1) * limit`), y en la paginación por cursor delimita el tamaño del lote a recuperar.
 
 #### Usando cursor
 
-Al emplear un cursor como estrategia, este puede ser una implementación propia o usando `CursorSerializer`, el cual es proveído por la librería para la serialización de cursores de manera genérica.
+Al emplear un cursor como estrategia, internamente `Pagination` hace uso del tipo `CursorPayload` que toma como representación una lista de criterios con valores y orden que debe emplear la paginación.
+
+```typescript
+import { type CursorPayload } from 'criteria-utility';
+
+const cursorPayload: CursorPayload = [
+  ['createdAt', '1989-02-25 11:56:26.472 -0500', 'DESC'],
+  ['username', 'richstallman', 'ASC'],
+  ['id', 32, 'DESC'],
+];
+```
+
+Al momento de especificar un cursor, `Criteria` asume que el cursor viene serializado e internamente utilizará un [serializador](#serializadores) por defecto para decodificar el cursor a su forma canónica de `CursorPayload`.
 
 ```typescript
 import { Criteria, Pagination } from 'criteria-utility';
 
-const cursor: string = '...'; // Cadena serializada del cursor
+const cursor: string = '...'; // Cursor serializado
 
-const criteria = Criteria.build(
-  {
+const criteria = Criteria.build({
+  filter: {
     age: {
       gte: 18,
     },
   },
-  Pagination.byCursor(cursor),
-  [],
-  30, // Límite de resultados por página
-);
+  pagination: Pagination.byCursor(cursor),
+  limit: 30,
+});
 
 const users = await userRepository.findAll(criteria);
 ```
 
-#### Cursor serializer
+> [!NOTE] 
+> `Pagination` emplea internamente `CursorBase64Serializer` por defecto, pero puedes usar una implementación en concreto pasándolo como segundo parámetro a `Pagination.byCursor`.
 
-Esta clase nos ayuda a la serialización de cursores para ser transportados. Para serializar un cursor debes emplear la clase `CursorSerializer` y hacer uso de sus métodos `encode` y `decode` para la serialización y decodificación del mismo, por ejemplo:
+#### Serializadores
+
+Cuando queremos exponer un cursor a un cliente, vamos a requerir de un `serializador` para que dicho cursor pueda ser transportado en un formato que pueda ser aceptado, como lo puede ser una cadena de texto en base 64.
 
 ```typescript
-import { CursorSerializer } from 'criteria-utility';
 
-const encodeCursor: string = CursorSerializer.encode([
+import { CursorBase64Serializer, type CursorPayload } from 'criteria-utility';
+
+const cursorPayload:CursorPayload = [
   ['createdAt', '2026-09-24 11:56:26.472 -0500', 'DESC'],
   ['username', 'deivisss', 'ASC'],
   ['id', 10, 'DESC'],
-]);
+]
 
-const decodeCursor: CursorPayload = CursorSerializer.decode(encodeCursor);
+const cursorBase64Serializer = new CursorBase64Serializer()
+
+const encodeCursor: string = cursorBase64Serializer.encode(cursorPayload);
+
+const decodeCursor: CursorPayload = cursorBase64Serializer.decode(encodeCursor);
 ```
 
-Como parámetro tenemos la lista de propiedades, valores y orden que se usarán para pivotar entre resultados. Se debe prestar atención al orden, puesto que esta será la prioridad de filtrado de los próximos resultados.
-
-En casos donde los primeros criterios no sean únicos o puedan tener valores repetidos, se debe especificar un criterio único al final de la lista para que actúe como factor de desempate y así evitar comportamientos indeseados.
+> [!TIP] 
+> Puedes implementar la interfaz `CursorSerializer<K,T>` para crear tus propios serializadores.
 
 ## Generadores
 
 La utilidad `Criteria` actúa como un objeto que encapsula la lógica para filtrar resultados, sea de un repositorio o un almacén de datos custom, pero dicha lógica tiene que ser interpretada por la implementación que estés empleando. Aquí es donde entran los generadores: estos nos ayudan a traducir un `Criteria` a la implementación que estés usando.
 
-Un ejemplo podría ser que tienes un repositorio que se comunica con una base de datos Postgres y lo haces mediante la librería nativa `pg`. Cuando recibimos el objeto `Criteria`, tenemos que generar el `sql` correspondiente a la lógica encapsulada en `Criteria`. Para esto, la librería ya cuenta con `PostgresSqlGenerator`, que nos genera el `sql` a partir de un objeto `Criteria`.
+Un ejemplo podría ser que tienes un repositorio que se comunica con una base de datos [Postgres](https://www.postgresql.org/) y lo haces mediante la librería nativa [pg](https://github.com/brianc/node-postgres). Cuando recibimos el objeto `Criteria`, tenemos que generar el [SQL](https://en.wikipedia.org/wiki/SQL) correspondiente a la lógica encapsulada en `Criteria`. Para esto, la librería ya cuenta con `PostgresSqlGenerator`, que nos genera el `sql` a partir de un objeto `Criteria`.
 
 ```typescript
 type Book = {
@@ -248,17 +265,17 @@ type Book = {
   publicationDate: Date;
 };
 
-const criteria = Criteria.build<Book>(
-  {
-    and: [{ rate: { gte: 4 } }, { publicationDate: { gte: '1911-01-01' } }],
+const criteria = Criteria.build<Book>({
+  filter: {
+    and: [{ rate: { gte: 4 } }, { publicationDate: { gte: '2008-01-08' } }],
   },
-  Pagination.byPage(22),
-  [
+  pagination: Pagination.byPage(22),
+  orderBy: [
     ['publicationDate', 'DESC'],
     ['name', 'ASC'],
   ],
-  15,
-);
+  limit: 15,
+});
 
 const sql = PostgresSqlGenerator.fromCriteria(criteria, 'bk');
 
@@ -276,13 +293,13 @@ El resultado sería:
     offset: 315,
     limit: 15
   },
-  values: [ 4, '1911-01-01' ]
+  values: [ 4, '2008-01-08' ]
 }
 ```
 
-**Un detalle con los cursores:**
 
-Cuando usas un cursor, este ya sabe exactamente cómo ordenar y paginar los siguientes resultados. Por eso, si defines un `orderBy` manual al mismo tiempo que pasas un cursor, el generador priorizará el cursor para evitar que la paginación se rompa o devuelva resultados inesperados.
+> [!IMPORTANT]
+> Cuando usas un cursor, este ya sabe exactamente cómo ordenar y paginar los siguientes resultados. Por eso, si defines un `orderBy` manual al mismo tiempo que pasas un cursor, el generador priorizará el cursor para evitar que la paginación se rompa o devuelva resultados inesperados.
 
 ## Desarrollo
 
