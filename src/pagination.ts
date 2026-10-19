@@ -1,5 +1,7 @@
 import { CursorBase64Serializer } from './cursor-serializers/cursor-base64-serializer.js';
 import type { CursorSerializer } from './cursor-serializers/cursor-serializer.js';
+import InvalidCursorPayload from './exceptions/invalid-cursor-payload.js';
+import InvalidPage from './exceptions/invalid-page.js';
 
 export type CursorSort = 'ASC' | 'DESC';
 
@@ -20,7 +22,7 @@ export default class Pagination {
 
   static validatePage(page: number) {
     if (!Number.isInteger(page) || page < 1) {
-      throw new Error('Page must be an integer greater than or equal to 1.');
+      throw new InvalidPage(String(page));
     }
   }
 
@@ -41,7 +43,10 @@ export default class Pagination {
 
   private static validateCursorCriterion(criterion: unknown) {
     if (!Array.isArray(criterion)) {
-      throw new Error('Cursor payload is not valid');
+      throw new InvalidCursorPayload(
+        'criterion must be a non-empty array',
+        String(criterion),
+      );
     }
 
     const [field, value, sort] = criterion as unknown[];
@@ -51,15 +56,16 @@ export default class Pagination {
       this.isUndefinedOrNull(value) ||
       (sort !== 'DESC' && sort !== 'ASC')
     ) {
-      throw new Error(
-        `Cursor criterion is invalid, received: ${criterion.toString()}`,
-      );
+      throw new InvalidCursorPayload('criterion malformed', String(criterion));
     }
   }
 
   private static validateCursorPayload(payload: unknown) {
     if (!Array.isArray(payload) || payload.length === 0) {
-      throw new Error('Cursor payload must be a non-empty array');
+      throw new InvalidCursorPayload(
+        'payload must be a non-empty array',
+        String(payload),
+      );
     }
     for (const element of payload) {
       this.validateCursorCriterion(element);
