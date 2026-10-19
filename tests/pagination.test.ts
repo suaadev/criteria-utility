@@ -1,35 +1,39 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 import Pagination from '../src/pagination';
 import { CursorSerializer } from '../src/cursor-serializers/cursor-serializer';
+import InvalidPage from '../src/exceptions/invalid-page';
+import InvalidCursorPayload from '../src/exceptions/invalid-cursor-payload';
 
 describe('Pagination', () => {
   describe('Pagination by page', () => {
     it('should throw an error when page is null', () => {
-      expect(() => Pagination.byPage(null as any)).toThrow(Error);
+      expect(() => Pagination.byPage(null as any)).toThrow(InvalidPage);
     });
 
     it('should throw an error when page is an object', () => {
-      expect(() => Pagination.byPage({ test: 'test' } as any)).toThrow(Error);
+      expect(() => Pagination.byPage({ test: 'test' } as any)).toThrow(
+        InvalidPage,
+      );
     });
 
     it('should throw an error when page is zero', () => {
-      expect(() => Pagination.byPage(0)).toThrow(Error);
+      expect(() => Pagination.byPage(0)).toThrow(InvalidPage);
     });
 
     it('should throw an error when page is negative', () => {
-      expect(() => Pagination.byPage(-234)).toThrow(Error);
+      expect(() => Pagination.byPage(-234)).toThrow(InvalidPage);
     });
 
     it('should throw an error when page is a decimal', () => {
-      expect(() => Pagination.byPage(23.12)).toThrow(Error);
+      expect(() => Pagination.byPage(23.12)).toThrow(InvalidPage);
     });
 
     it('should throw an error when page is Infinity', () => {
-      expect(() => Pagination.byPage(Infinity)).toThrow(Error);
+      expect(() => Pagination.byPage(Infinity)).toThrow(InvalidPage);
     });
 
     it('should throw an error when page is -Infinity', () => {
-      expect(() => Pagination.byPage(-Infinity)).toThrow(Error);
+      expect(() => Pagination.byPage(-Infinity)).toThrow(InvalidPage);
     });
 
     it('should create pagination with integer greater than 1', () => {
@@ -66,7 +70,7 @@ describe('Pagination', () => {
       const cursorTest = 'cursor 1';
       expect(() => {
         Pagination.byCursor(cursorTest, mockCursorParser);
-      }).toThrow(Error);
+      }).toThrow(InvalidCursorPayload);
       expect(decode).toHaveBeenCalledWith(cursorTest);
       expect(decode).toHaveReturnedWith([[null, null, 'a']]);
       expect(decode).toHaveBeenCalledTimes(1);
@@ -77,7 +81,7 @@ describe('Pagination', () => {
       const cursorTest = 'cursor 2';
       expect(() => {
         Pagination.byCursor(cursorTest, mockCursorParser);
-      }).toThrow(Error);
+      }).toThrow(InvalidCursorPayload);
       expect(decode).toHaveBeenCalledWith(cursorTest);
       expect(decode).toHaveReturnedWith([null, {}]);
       expect(decode).toHaveBeenCalledTimes(1);
@@ -88,7 +92,7 @@ describe('Pagination', () => {
       const cursorTest = 'cursor 3';
       expect(() => {
         Pagination.byCursor(cursorTest, mockCursorParser);
-      }).toThrow(Error);
+      }).toThrow(InvalidCursorPayload);
       expect(decode).toHaveBeenCalledWith(cursorTest);
       expect(decode).toHaveReturnedWith([]);
       expect(decode).toHaveBeenCalledTimes(1);
@@ -99,7 +103,7 @@ describe('Pagination', () => {
       const cursorTest = 'cursor 4';
       expect(() => {
         Pagination.byCursor(cursorTest, mockCursorParser);
-      }).toThrow(Error);
+      }).toThrow(InvalidCursorPayload);
       expect(decode).toHaveBeenCalledWith(cursorTest);
       expect(decode).toHaveReturnedWith(null);
       expect(decode).toHaveBeenCalledTimes(1);
