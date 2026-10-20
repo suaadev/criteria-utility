@@ -81,6 +81,8 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
   "<field>": { "<operator>": "<field or value or expression>" }
 }
 ```
+> [!NOTE]
+> Para hacer referencia a un campo como valor se usa $ al inicio del string ej: "$username"
 
 | Operador |                   Descripción                   |
 | :------: | :---------------------------------------------: |
