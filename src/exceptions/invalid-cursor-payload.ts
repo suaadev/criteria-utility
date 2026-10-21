@@ -1,11 +1,11 @@
-export default class InvalidCursorPayload extends Error {
-  constructor(reason?: string, received?: string) {
-    const reasonMessage = reason ? `, reason: ${reason}` : '';
-    const receivedMessage = received ? `, received: "${received}"` : '';
-    const message =
-      `Cursor payload is invalid${reasonMessage}${receivedMessage}`.trim() +
-      '.';
-    super(message);
-    this.name = 'InvalidCursorPayload';
+import CriteriaError from './criteria-error.js';
+
+export default class InvalidCursorPayload extends CriteriaError {
+  constructor(message?: string, received?: string) {
+    super(
+      'InvalidCursorPayload',
+      message ?? `Cursor payload is invalid`,
+      received,
+    );
   }
 }

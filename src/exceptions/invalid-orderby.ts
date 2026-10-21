@@ -1,10 +1,7 @@
-export default class InvalidOrderBy extends Error {
-  constructor(reason?: string, received?: string) {
-    const reasonMessage = reason ? `, reason: ${reason}` : '';
-    const receivedMessage = received ? `, received: "${received}"` : '';
-    const message =
-      `Invalid orderBy${reasonMessage}${receivedMessage}`.trim() + '.';
-    super(message);
-    this.name = 'InvalidOrderBy';
+import CriteriaError from './criteria-error.js';
+
+export default class InvalidOrderBy extends CriteriaError {
+  constructor(message?: string, received?: string) {
+    super('InvalidOrderBy', message ?? 'Invalid OrderBy', received);
   }
 }
