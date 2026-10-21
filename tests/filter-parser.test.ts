@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import * as FilterParser from '../src/filter/filter-parser';
 import { ExpressionRaw } from '../src/filter/basic-grammar';
+import InvalidExpression from '../src/exceptions/invalid-expression';
 
 describe('FilterParser', () => {
   describe('general expressions', () => {
@@ -29,12 +30,12 @@ describe('FilterParser', () => {
       });
     });
 
-    it('should throw SyntaxError when input object contains an invalid key', () => {
+    it('should throw InvalidExpression when input object contains an invalid key', () => {
       const badExpression = {
         wrongKey: [1, 2],
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
@@ -48,44 +49,50 @@ describe('FilterParser', () => {
   });
 
   describe('logical expressions (and / or)', () => {
-    it('should throw SyntaxError when logical array is empty', () => {
+    it('should throw InvalidExpression when logical array is empty', () => {
       const badExpression = {
         and: [],
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(
+        InvalidExpression,
+      );
     });
 
-    it('should throw SyntaxError when logical array has fewer than two elements', () => {
+    it('should throw InvalidExpression when logical array has fewer than two elements', () => {
       const badExpression: ExpressionRaw = {
         not: {
           or: [true],
         },
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(
+        InvalidExpression,
+      );
     });
 
-    it('should throw SyntaxError when logical array contains an empty object', () => {
+    it('should throw InvalidExpression when logical array contains an empty object', () => {
       const badExpression: ExpressionRaw = {
         and: [{}, 1],
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(
+        InvalidExpression,
+      );
     });
 
-    it('should throw SyntaxError when logical operand is an object instead of array', () => {
+    it('should throw InvalidExpression when logical operand is an object instead of array', () => {
       const badExpression = {
         and: {},
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when logical operand is null', () => {
+    it('should throw InvalidExpression when logical operand is null', () => {
       const badExpression = {
         and: null,
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
@@ -130,11 +137,13 @@ describe('FilterParser', () => {
   });
 
   describe('comparison expressions', () => {
-    it('should throw SyntaxError when comparison operand is an empty object', () => {
+    it('should throw InvalidExpression when comparison operand is an empty object', () => {
       const badExpression: ExpressionRaw = {
         dog: { equals: {} },
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(
+        InvalidExpression,
+      );
     });
 
     it('should parse an equals expression with an array operand', () => {
@@ -167,51 +176,51 @@ describe('FilterParser', () => {
       });
     });
 
-    it('should throw SyntaxError when a field contains more than one operator', () => {
+    it('should throw InvalidExpression when a field contains more than one operator', () => {
       const badExpression = {
         age: { gt: 10, lt: 20 },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when lt operator is an empty object', () => {
+    it('should throw InvalidExpression when lt operator is an empty object', () => {
       const badExpression = {
         some: { lt: {} },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when gt operator is a function', () => {
+    it('should throw InvalidExpression when gt operator is a function', () => {
       const badExpression = {
         1: { gt: () => {} },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when gt operator is an empty object', () => {
+    it('should throw InvalidExpression when gt operator is an empty object', () => {
       const badExpression = {
         username: {
           gt: {},
         },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when comparison operands contain invalid types', () => {
+    it('should throw InvalidExpression when comparison operands contain invalid types', () => {
       const badExpression = {
         cat: { diff: [() => {}, undefined] },
       };
 
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
@@ -230,39 +239,41 @@ describe('FilterParser', () => {
       });
     });
 
-    it('should throw SyntaxError when an invalid operator is provided', () => {
+    it('should throw InvalidExpression when an invalid operator is provided', () => {
       const badExpression = {
         age: { badOperator: {} },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
   });
 
   describe('not expressions', () => {
-    it('should throw SyntaxError when not expression is an empty object', () => {
+    it('should throw InvalidExpression when not expression is an empty object', () => {
       const badExpression: ExpressionRaw = {
         not: {},
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(badExpression)).toThrow(
+        InvalidExpression,
+      );
     });
 
-    it('should throw SyntaxError when not expression is a function', () => {
+    it('should throw InvalidExpression when not expression is a function', () => {
       const badExpression = {
         not: () => {},
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when not expression is null', () => {
+    it('should throw InvalidExpression when not expression is null', () => {
       const badExpression = {
         not: null,
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
@@ -286,60 +297,60 @@ describe('FilterParser', () => {
   });
 
   describe('in expressions', () => {
-    it('should throw SyntaxError when in array is empty', () => {
+    it('should throw InvalidExpression when in array is empty', () => {
       const badExpression = {
         role: { in: [] },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when in operand contains invalid values', () => {
+    it('should throw InvalidExpression when in operand contains invalid values', () => {
       const badExpression = {
         in: [() => {}, null],
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when in array contains complex expressions', () => {
+    it('should throw InvalidExpression when in array contains complex expressions', () => {
       const badExpression = {
         role: { in: [{ and: [true, true] }] },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when in target is an invalid expression', () => {
+    it('should throw InvalidExpression when in target is an invalid expression', () => {
       const badExpression = {
         in: [{ and: [true, true] }, [1, 2]],
       };
 
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when in array contains an invalid nested element', () => {
+    it('should throw InvalidExpression when in array contains an invalid nested element', () => {
       const badExpression = {
         some: { in: [1, [1, 2, 1, 1, {}]] },
       };
 
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
-    it('should throw SyntaxError when in array contains invalid expressions', () => {
+    it('should throw InvalidExpression when in array contains invalid expressions', () => {
       const badExpression = {
         some: { in: [() => {}, { user: 'daaa' }] },
       };
 
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
-        SyntaxError,
+        InvalidExpression,
       );
     });
 
@@ -434,60 +445,60 @@ describe('FilterParser', () => {
       });
     });
 
-    it('should throw SyntaxError when field reference is only a dollar sign', () => {
+    it('should throw InvalidExpression when field reference is only a dollar sign', () => {
       const expression: ExpressionRaw = {
         indira_: { equals: '$' },
       };
 
-      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
 
-    it('should throw SyntaxError when field starts with dollar sign', () => {
+    it('should throw InvalidExpression when field starts with dollar sign', () => {
       const expression: ExpressionRaw = {
         '$%4f_': { equals: 'wtf' },
       };
 
-      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
 
-    it('should throw SyntaxError when field starts with percentage sign', () => {
+    it('should throw InvalidExpression when field starts with percentage sign', () => {
       const expression: ExpressionRaw = {
         '%4f_e_t': { gt: 3.14159 },
       };
 
-      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
 
-    it('should throw SyntaxError when field starts with a number', () => {
+    it('should throw InvalidExpression when field starts with a number', () => {
       const expression: ExpressionRaw = {
         '34_test': { gt: 0.57721 },
       };
 
-      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
 
-    it('should throw SyntaxError when field starts with @', () => {
+    it('should throw InvalidExpression when field starts with @', () => {
       const expression: ExpressionRaw = {
         '@_l': { in: [0.57721, 3.14159] },
       };
 
-      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
 
-    it('should throw SyntaxError when field contains "" or spaces', () => {
+    it('should throw InvalidExpression when field contains "" or spaces', () => {
       const expression: ExpressionRaw = {
         '"="" OR "': { equals: 'SQLi' },
       };
 
-      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
 
-    it('should throw SyntaxError when field reference contains invalid characters', () => {
+    it('should throw InvalidExpression when field reference contains invalid characters', () => {
       const expression: ExpressionRaw = {
         paganotto: { equals: '$s&?da34' },
       };
 
-      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+      expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
   });
 });

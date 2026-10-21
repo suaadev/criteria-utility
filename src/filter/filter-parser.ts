@@ -1,3 +1,4 @@
+import InvalidExpression from '../exceptions/invalid-expression.js';
 import * as basicGrammar from './basic-grammar.js';
 import * as grammar from './grammar.js';
 
@@ -56,8 +57,9 @@ export function parse<T>(
         expression.kind !== 'FieldExpression' &&
         expression.kind !== 'ArrayExpression'
       ) {
-        throw new SyntaxError(
+        throw new InvalidExpression(
           'The Array expression requires a LiteralExpression, ArrayExpression, or FieldExpression',
+          input,
         );
       }
       items.push(expression);
@@ -66,14 +68,15 @@ export function parse<T>(
   }
 
   if (!input || typeof input != 'object') {
-    throw new SyntaxError('Invalid input');
+    throw new InvalidExpression('Invalid input', input);
   }
 
   const keys = Object.keys(input);
 
   if (keys.length != 1) {
-    throw new SyntaxError(
-      'Input object is not valid; it must contain only one key',
+    throw new InvalidExpression(
+      'Object is not valid; it must contain only one key',
+      input,
     );
   }
 
@@ -85,13 +88,15 @@ export function parse<T>(
     const expressionsRaw = (input as basicGrammar.ConditionalRaw<T>)[key];
 
     if (!Array.isArray(expressionsRaw))
-      throw new SyntaxError(
+      throw new InvalidExpression(
         `The Logic expression must be an array of expressions.`,
+        input,
       );
 
     if (expressionsRaw.length <= 1) {
-      throw new SyntaxError(
+      throw new InvalidExpression(
         'The Logic expression must contain at least two arguments.',
+        input,
       );
     }
 
@@ -110,7 +115,7 @@ export function parse<T>(
     const expressionsRaw = (input as basicGrammar.NotExpressionRaw<T>)['not'];
 
     if (!expressionsRaw) {
-      throw new SyntaxError('The NOT expression is invalid');
+      throw new InvalidExpression('The NOT expression is invalid', input);
     }
 
     const expression: grammar.Expression = parse(expressionsRaw);
@@ -135,7 +140,7 @@ export function parse<T>(
   const keysOperation = Object.keys(operation);
 
   if (keysOperation.length !== 1) {
-    throw new SyntaxError('The field requires an operand');
+    throw new InvalidExpression('The field requires an operand', input);
   }
 
   const operator: string = keysOperation[0];
@@ -163,28 +168,33 @@ export function parse<T>(
     const arrayRaw = operation[operator];
 
     if (!Array.isArray(arrayRaw) || arrayRaw.length === 0) {
-      throw new SyntaxError(
+      throw new InvalidExpression(
         'The Array expression in IN expression must contain at least one item',
+        input,
       );
     }
 
     const arrayExpression = parse(arrayRaw);
 
     if (arrayExpression.kind !== 'ArrayExpression') {
-      throw new SyntaxError(
+      throw new InvalidExpression(
         'The IN expression must contain an array of literal or field expressions.',
+        arrayExpression,
       );
     }
 
     return buildInExpression(buildFieldExpression(key), arrayExpression);
   }
 
-  throw new SyntaxError('The input expression is invalid');
+  throw new InvalidExpression('The input expression is invalid', input);
 }
 
 function validateFieldExpression(field: string) {
   if (!idExpressionRegex.test(field)) {
-    throw new SyntaxError(`The field expression provided is invalid: ${field}`);
+    throw new InvalidExpression(
+      `The field expression provided is invalid`,
+      field,
+    );
   }
 }
 
