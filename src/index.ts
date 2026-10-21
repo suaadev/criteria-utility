@@ -8,6 +8,7 @@ import { CursorBase64Serializer } from './cursor-serializers/cursor-base64-seria
 import type { CursorSerializer } from './cursor-serializers/cursor-serializer.js';
 import CriteriaError from './exceptions/criteria-error.js';
 import InvalidCursorPayload from './exceptions/invalid-cursor-payload.js';
+import InvalidExpression from './exceptions/invalid-expression.js';
 import InvalidLimit from './exceptions/invalid-limit.js';
 import InvalidOrderBy from './exceptions/invalid-orderby.js';
 import InvalidPage from './exceptions/invalid-page.js';
@@ -25,6 +26,7 @@ export {
   CriteriaError,
   CursorBase64Serializer,
   InvalidCursorPayload,
+  InvalidExpression,
   InvalidLimit,
   InvalidOrderBy,
   InvalidPage,
