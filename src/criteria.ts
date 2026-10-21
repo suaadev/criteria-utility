@@ -48,19 +48,23 @@ export class Criteria<T = unknown> {
 
   private validateOrderBy(orderBy: OrderByRaw<T>): OrderBy {
     if (!Array.isArray(orderBy)) {
-      throw new InvalidOrderBy('The orderBy must be an array');
+      throw new InvalidOrderBy('The orderBy must be an array', orderBy);
     }
 
     const orderBySanitized: OrderBy = new Map<string, Sort>([]);
 
     for (const criterion of orderBy) {
       if (!Array.isArray(criterion)) {
-        throw new InvalidOrderBy('The criterion of orderBy must be an array');
+        throw new InvalidOrderBy(
+          'The criterion of orderBy must be an array',
+          criterion,
+        );
       }
 
       if (criterion.length !== 2) {
         throw new InvalidOrderBy(
           'The criterion must contain only two elements, field and sort',
+          criterion,
         );
       }
 
@@ -70,10 +74,7 @@ export class Criteria<T = unknown> {
         throw new InvalidOrderBy('The sort value must be ASC or DESC', sort);
       }
       if (typeof field !== 'string') {
-        throw new InvalidOrderBy(
-          'The field order must be a string',
-          String(field),
-        );
+        throw new InvalidOrderBy('The field order must be a string', field);
       }
       orderBySanitized.set(field, sort);
     }
@@ -88,7 +89,7 @@ export class Criteria<T = unknown> {
     if (pagination !== null && !(pagination instanceof Pagination)) {
       throw new InvalidPagination(
         'The pagination must be an object of the type Pagination',
-        String(pagination),
+        pagination,
       );
     }
 
@@ -101,7 +102,7 @@ export class Criteria<T = unknown> {
 
   private validateLimit(limit: number | null) {
     if (limit !== null && (!Number.isInteger(limit) || limit < 1)) {
-      throw new InvalidLimit(String(limit));
+      throw new InvalidLimit(limit);
     }
   }
 
