@@ -20,12 +20,6 @@ export default class Pagination {
     return new Pagination(page, null);
   }
 
-  static validatePage(page: number) {
-    if (!Number.isInteger(page) || page < 1) {
-      throw new InvalidPage(String(page));
-    }
-  }
-
   static byCursor(
     cursor: unknown,
     cursorSerializer: CursorSerializer<CursorPayload> = new CursorBase64Serializer(),
@@ -37,6 +31,12 @@ export default class Pagination {
     return new Pagination(null, decodeCursor);
   }
 
+  static validatePage(page: number) {
+    if (!Number.isInteger(page) || page < 1) {
+      throw new InvalidPage(page);
+    }
+  }
+
   private static isUndefinedOrNull(value: unknown) {
     return value === undefined || value === null;
   }
@@ -45,7 +45,7 @@ export default class Pagination {
     if (!Array.isArray(criterion)) {
       throw new InvalidCursorPayload(
         'criterion must be a non-empty array',
-        String(criterion),
+        criterion,
       );
     }
 
@@ -56,7 +56,7 @@ export default class Pagination {
       this.isUndefinedOrNull(value) ||
       (sort !== 'DESC' && sort !== 'ASC')
     ) {
-      throw new InvalidCursorPayload('criterion malformed', String(criterion));
+      throw new InvalidCursorPayload('criterion malformed', criterion);
     }
   }
 
@@ -64,7 +64,7 @@ export default class Pagination {
     if (!Array.isArray(payload) || payload.length === 0) {
       throw new InvalidCursorPayload(
         'payload must be a non-empty array',
-        String(payload),
+        payload,
       );
     }
     for (const element of payload) {
