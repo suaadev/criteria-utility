@@ -414,7 +414,18 @@ describe('FilterParser', () => {
 
     it('should parse a valid field reference matching identifier regex', () => {
       const expression: ExpressionRaw = {
-        1: { equals: '$_sd_a_3_4' },
+        t3s_t: { equals: '$_sd_a_3_4' },
+      };
+      const resultParse = FilterParser.parse(expression);
+
+      expect(resultParse).toMatchObject({
+        kind: 'ComparisonExpression',
+      });
+    });
+
+    it('should parse a valid field name matching identifier regex', () => {
+      const expression: ExpressionRaw = {
+        _3st: { equals: 'clean_code' },
       };
       const resultParse = FilterParser.parse(expression);
 
@@ -425,15 +436,47 @@ describe('FilterParser', () => {
 
     it('should throw SyntaxError when field reference is only a dollar sign', () => {
       const expression: ExpressionRaw = {
-        1: { equals: '$' },
+        indira_: { equals: '$' },
       };
 
       expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
     });
 
-    it('should throw SyntaxError when field reference starts with a digit after dollar sign', () => {
+    it('should throw SyntaxError when field starts with dollar sign', () => {
       const expression: ExpressionRaw = {
-        username: { equals: '$123sda' },
+        '$%4f_': { equals: 'wtf' },
+      };
+
+      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+    });
+
+    it('should throw SyntaxError when field starts with percentage sign', () => {
+      const expression: ExpressionRaw = {
+        '%4f_e_t': { gt: 3.14159 },
+      };
+
+      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+    });
+
+    it('should throw SyntaxError when field starts with a number', () => {
+      const expression: ExpressionRaw = {
+        '34_test': { gt: 0.57721 },
+      };
+
+      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+    });
+
+    it('should throw SyntaxError when field starts with @', () => {
+      const expression: ExpressionRaw = {
+        '@_l': { in: [0.57721, 3.14159] },
+      };
+
+      expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
+    });
+
+    it('should throw SyntaxError when field contains "" or spaces', () => {
+      const expression: ExpressionRaw = {
+        '"="" OR "': { equals: 'SQLi' },
       };
 
       expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);
@@ -441,7 +484,7 @@ describe('FilterParser', () => {
 
     it('should throw SyntaxError when field reference contains invalid characters', () => {
       const expression: ExpressionRaw = {
-        1: { equals: '$s&?da34' },
+        paganotto: { equals: '$s&?da34' },
       };
 
       expect(() => FilterParser.parse(expression)).toThrow(SyntaxError);

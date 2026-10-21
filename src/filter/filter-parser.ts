@@ -21,19 +21,16 @@ const mapLogicOperator: Record<
   or: '||',
 };
 
-const idExpressionRegex = /^\$[a-zA-Z_][a-zA-Z0-9_]*$/;
+const idExpressionRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 export function parse<T>(
   input: basicGrammar.ExpressionRaw<T>,
 ): grammar.Expression {
   // Field expressions
   if (typeof input === 'string' && input.charAt(0) === '$') {
-    if (!idExpressionRegex.test(input)) {
-      throw new SyntaxError(
-        `The field or id expression provided is invalid: ${input}`,
-      );
-    }
-    return buildFieldExpression(input.slice(1));
+    const field: string = input.slice(1);
+    validateFieldExpression(field);
+    return buildFieldExpression(field);
   }
 
   // Literal expressions
@@ -121,6 +118,8 @@ export function parse<T>(
     return buildNotExpression(expression);
   }
 
+  validateFieldExpression(key);
+
   const field = key as keyof T;
 
   const operation = (
@@ -181,6 +180,12 @@ export function parse<T>(
   }
 
   throw new SyntaxError('The input expression is invalid');
+}
+
+function validateFieldExpression(field: string) {
+  if (!idExpressionRegex.test(field)) {
+    throw new SyntaxError(`The field expression provided is invalid: ${field}`);
+  }
 }
 
 function buildLiteralExpression(
