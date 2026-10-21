@@ -7,7 +7,10 @@ import {
 import { CursorBase64Serializer } from './cursor-serializers/cursor-base64-serializer.js';
 import type { CursorSerializer } from './cursor-serializers/cursor-serializer.js';
 import InvalidCursorPayload from './exceptions/invalid-cursor-payload.js';
+import InvalidLimit from './exceptions/invalid-limit.js';
+import InvalidOrderBy from './exceptions/invalid-orderby.js';
 import InvalidPage from './exceptions/invalid-page.js';
+import InvalidPagination from './exceptions/invalid-pagination.js';
 import * as PostgresSqlGenerator from './generators/postgres-sql.generator.js';
 import type {
   CursorCriterion,
@@ -20,7 +23,10 @@ export {
   Criteria,
   CursorBase64Serializer,
   InvalidCursorPayload,
+  InvalidLimit,
+  InvalidOrderBy,
   InvalidPage,
+  InvalidPagination,
   Pagination,
   PostgresSqlGenerator,
   type CriteriaOptions,

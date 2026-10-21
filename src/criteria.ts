@@ -1,3 +1,6 @@
+import InvalidLimit from './exceptions/invalid-limit.js';
+import InvalidOrderBy from './exceptions/invalid-orderby.js';
+import InvalidPagination from './exceptions/invalid-pagination.js';
 import { ExpressionRaw } from './filter/basic-grammar.js';
 import * as FilterParser from './filter/filter-parser.js';
 import { Expression } from './filter/grammar.js';
@@ -45,29 +48,32 @@ export class Criteria<T = unknown> {
 
   private validateOrderBy(orderBy: OrderByRaw<T>): OrderBy {
     if (!Array.isArray(orderBy)) {
-      throw new Error('The orderBy must be a Array');
+      throw new InvalidOrderBy('The orderBy must be an array');
     }
 
     const orderBySanitized: OrderBy = new Map<string, Sort>([]);
 
     for (const criterion of orderBy) {
       if (!Array.isArray(criterion)) {
-        throw new Error('The criterio of orderBy must be a array.');
+        throw new InvalidOrderBy('The criterion of orderBy must be an array');
       }
 
       if (criterion.length !== 2) {
-        throw new Error(
-          'The criterion must contain only two elements, field and sort.',
+        throw new InvalidOrderBy(
+          'The criterion must contain only two elements, field and sort',
         );
       }
 
       const [field, sort] = criterion;
 
       if (sort !== 'DESC' && sort !== 'ASC') {
-        throw new Error('The sort value must be ASC or DESC');
+        throw new InvalidOrderBy('The sort value must be ASC or DESC', sort);
       }
       if (typeof field !== 'string') {
-        throw new Error('The field order must be a string.');
+        throw new InvalidOrderBy(
+          'The field order must be a string',
+          String(field),
+        );
       }
       orderBySanitized.set(field, sort);
     }
@@ -80,19 +86,22 @@ export class Criteria<T = unknown> {
     limit: number | null,
   ) {
     if (pagination !== null && !(pagination instanceof Pagination)) {
-      throw new Error(
-        'The pagination must be a object of the type Pagination.',
+      throw new InvalidPagination(
+        'The pagination must be an object of the type Pagination',
+        String(pagination),
       );
     }
 
     if (pagination !== null && !Number.isInteger(limit)) {
-      throw new Error('To apply pagination you must to provide a limit.');
+      throw new InvalidPagination(
+        'To apply pagination you must provide a limit',
+      );
     }
   }
 
   private validateLimit(limit: number | null) {
     if (limit !== null && (!Number.isInteger(limit) || limit < 1)) {
-      throw new Error('Limit must be a integer greater than or equal to 1.');
+      throw new InvalidLimit(String(limit));
     }
   }
 
