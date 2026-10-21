@@ -6,6 +6,7 @@ import {
 } from './criteria.js';
 import { CursorBase64Serializer } from './cursor-serializers/cursor-base64-serializer.js';
 import type { CursorSerializer } from './cursor-serializers/cursor-serializer.js';
+import CriteriaError from './exceptions/criteria-error.js';
 import InvalidCursorPayload from './exceptions/invalid-cursor-payload.js';
 import InvalidLimit from './exceptions/invalid-limit.js';
 import InvalidOrderBy from './exceptions/invalid-orderby.js';
@@ -21,6 +22,7 @@ import Pagination from './pagination.js';
 
 export {
   Criteria,
+  CriteriaError,
   CursorBase64Serializer,
   InvalidCursorPayload,
   InvalidLimit,
