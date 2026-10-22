@@ -268,6 +268,42 @@ describe('FilterParser', () => {
       );
     });
 
+    it('should throw InvalidExpression when not expression is true', () => {
+      const badExpression = {
+        not: true,
+      };
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
+        InvalidExpression,
+      );
+    });
+
+    it('should throw InvalidExpression when not expression is 1', () => {
+      const badExpression = {
+        not: 1,
+      };
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
+        InvalidExpression,
+      );
+    });
+
+    it('should throw InvalidExpression when not expression is array', () => {
+      const badExpression = {
+        not: [1, 2, '3', '5', true, 'turing'],
+      };
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
+        InvalidExpression,
+      );
+    });
+
+    it('should throw InvalidExpression when not expression is undefined', () => {
+      const badExpression = {
+        not: undefined,
+      };
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
+        InvalidExpression,
+      );
+    });
+
     it('should throw InvalidExpression when not expression is null', () => {
       const badExpression = {
         not: null,
