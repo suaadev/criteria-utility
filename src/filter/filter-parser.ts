@@ -44,11 +44,7 @@ export function parse<T>(
 
   // Array Expression
   if (Array.isArray(input)) {
-    const items: (
-      | grammar.LiteralExpression
-      | grammar.FieldExpression
-      | grammar.ArrayExpression
-    )[] = [];
+    const items: grammar.ArrayExpression['items'] = [];
 
     for (const item of input) {
       const expression = parse(item);
@@ -67,7 +63,7 @@ export function parse<T>(
     return buildArrayExpression(items);
   }
 
-  if (!input || typeof input != 'object') {
+  if (typeof input != 'object') {
     throw new InvalidExpression('Invalid input', input);
   }
 
@@ -114,11 +110,20 @@ export function parse<T>(
   if (key === 'not') {
     const expressionsRaw = (input as basicGrammar.NotExpressionRaw<T>)['not'];
 
-    if (!expressionsRaw) {
-      throw new InvalidExpression('The NOT expression is invalid', input);
-    }
-
     const expression: grammar.Expression = parse(expressionsRaw);
+
+    if (
+      expression.kind !== 'FieldExpression' &&
+      expression.kind !== 'ComparisonExpression' &&
+      expression.kind !== 'LogicExpression' &&
+      expression.kind !== 'NotExpression' &&
+      expression.kind !== 'InExpression'
+    ) {
+      throw new InvalidExpression(
+        `The NOT expression requires a valid expression`,
+        input,
+      );
+    }
 
     return buildNotExpression(expression);
   }
@@ -221,17 +226,13 @@ function buildLogicExpression(
 }
 
 function buildNotExpression(
-  expression: grammar.Expression,
+  expression: grammar.NotExpression['expression'],
 ): grammar.NotExpression {
   return { kind: 'NotExpression', expression };
 }
 
 function buildArrayExpression(
-  items: (
-    | grammar.LiteralExpression
-    | grammar.FieldExpression
-    | grammar.ArrayExpression
-  )[],
+  items: grammar.ArrayExpression['items'],
 ): grammar.ArrayExpression {
   return {
     kind: 'ArrayExpression',
@@ -240,7 +241,7 @@ function buildArrayExpression(
 }
 
 function buildInExpression(
-  value: grammar.LiteralExpression | grammar.FieldExpression,
+  value: grammar.InExpression['value'],
   arrayExpression: grammar.ArrayExpression,
 ): grammar.InExpression {
   return { kind: 'InExpression', arrayExpression, value };

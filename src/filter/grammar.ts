@@ -11,7 +11,12 @@ export interface LiteralExpression {
 
 export interface NotExpression {
   kind: 'NotExpression';
-  expression: Expression;
+  expression:
+    | LogicExpression
+    | ComparisonExpression
+    | FieldExpression
+    | InExpression
+    | NotExpression;
 }
 
 export interface ComparisonExpression {
