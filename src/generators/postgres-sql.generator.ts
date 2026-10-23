@@ -18,7 +18,7 @@ const mapLogicOperatorsToSql: Record<grammar.LogicalOperator, string> = {
 };
 
 const validsExpInLogicExp = [
-  'LiteralExpression',
+  'FieldExpression',
   'ComparisonExpression',
   'LogicExpression',
   'NotExpression',
@@ -136,14 +136,6 @@ function expressionToSql(
   }
 
   if (expression.kind === 'NotExpression') {
-    if (
-      expression.expression.kind === 'LiteralExpression' &&
-      typeof expression.expression.value != 'boolean'
-    ) {
-      throw new SyntaxError(
-        `Invalid operand in NotExpression: expected boolean, received ${typeof expression.expression.value} (${expression.expression.value})`,
-      );
-    }
     const expr: string = expressionToSql(
       expression.expression,
       alias,
@@ -226,15 +218,6 @@ function validateOperandInLogicExp(
   if (!validsExpInLogicExp.includes(expression.kind)) {
     throw new SyntaxError(
       `Invalid ${type} operand in LogicExpression: expected (${validsExpInLogicExp.join(', ')}), received: ${expression.kind}`,
-    );
-  }
-
-  if (
-    expression.kind === 'LiteralExpression' &&
-    typeof expression.value != 'boolean'
-  ) {
-    throw new SyntaxError(
-      `Invalid ${type} operand in LogicExpression: expected boolean for LiteralExpression, received ${typeof expression.value} (${expression.value})`,
     );
   }
 }
