@@ -26,7 +26,11 @@ const cursorInBase64: string = cursorBase64Serializer.encode([
 
 const criteria = Criteria.build<Book>({
   filter: {
-    and: [{ rate: { gte: 4 } }, { publicationDate: { gte: '1911-01-01' } }],
+    and: [
+      { rate: { gte: 4 } },
+      { publicationDate: { gte: '1911-01-01' } },
+      { not: { name: { gte: 'test' } } },
+    ],
   },
   pagination: Pagination.byCursor(cursorInBase64),
   orderBy: [
