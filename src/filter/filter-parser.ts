@@ -115,7 +115,7 @@ export function parse<T>(
       expressions.push(expression);
     }
 
-    return appendExpressions(expressions, (le, re) =>
+    return expressions.reduce((le, re) =>
       buildLogicExpression(le, mapLogicOperator[key], re),
     );
   }
@@ -264,18 +264,4 @@ function buildInExpression(
 
 function buildFieldExpression(value: string): grammar.FieldExpression {
   return { kind: 'FieldExpression', value };
-}
-
-function appendExpressions<T>(
-  expressionsToAppend: T[],
-  builder: (lastExpression: T, currentExpression: T) => T,
-) {
-  let lastExpression: T = expressionsToAppend[0];
-
-  for (let i = 1; i < expressionsToAppend.length; i++) {
-    const expressionToAppend = expressionsToAppend[i];
-
-    lastExpression = builder(lastExpression, expressionToAppend);
-  }
-  return lastExpression;
 }
