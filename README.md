@@ -3,9 +3,7 @@
 <p align="left">
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest" />
   <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Mongodb-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
 </p>
 
 `Criteria-utility` es una librería que implementa el patrón de diseño `Criteria`, el cual nos provee la capacidad de especificar y transportar criterios de búsqueda. Uno de los usos de esta librería es gestionar la comunicación con los repositorios. Actualmente, cuando implementamos repositorios lo hacemos exponiendo métodos con un propósito específico como `find`, `save`, `findOne`, `update`, etc. Estos métodos reflejan una acción que queremos realizar, pero muchas veces también necesitamos especificar un criterio para cumplir dicha acción:
@@ -66,7 +64,7 @@ const user: User | null = await userRepository.findOne(criteria);
 
 ### Expresiones
 
-Armar criterios de búsqueda es muy intuitivo. Si ya has trabajado con [MongoDB](https://github.com/mongodb/mongo), te vas a sentir como en casa, ya que la sintaxis sigue una idea muy parecida para que no tengas que aprender todo desde cero. Aquí tienes las operaciones que puedes usar:
+Armar criterios de búsqueda es muy intuitivo. Si ya has trabajado con [MongoDB](https://github.com/mongodb/mongo) te va ser muy facil debido a su similitud en sintaxis.
 
 #### Operaciones
 
@@ -81,6 +79,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
   "<field>": { "<operator>": "<field or value or expression>" }
 }
 ```
+
 > [!NOTE]
 > Para hacer referencia a un campo como valor se usa $ al inicio del string ej: "$username"
 
@@ -106,7 +105,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 ```typescript
 {
   age: {
-    gte: 18;
+    gte: 18
   }
 }
 ```
@@ -117,7 +116,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 
 ```json
 {
-  "<operator>": ["expressions..."]
+  "<operator>": ["<expression>", "<expression>", "..."]
 }
 ```
 
@@ -130,7 +129,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 
 ```typescript
 {
-  and: [{ age: { gte: 18 } }, { age: { lte: 60 } }];
+  and: [{ age: { gte: 18 } }, { age: { lte: 60 } }]
 }
 ```
 
@@ -139,7 +138,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
   or: [
     { username: { equals: 'torlvals' } },
     { username: { equals: 'robCMartin' } },
-  ];
+  ]
 }
 ```
 
@@ -225,7 +224,7 @@ const criteria = Criteria.build({
 const users = await userRepository.findAll(criteria);
 ```
 
-> [!NOTE] 
+> [!NOTE]
 > `Pagination` emplea internamente `CursorBase64Serializer` por defecto, pero puedes usar una implementación en concreto pasándolo como segundo parámetro a `Pagination.byCursor`.
 
 #### Serializadores
@@ -233,23 +232,22 @@ const users = await userRepository.findAll(criteria);
 Cuando queremos exponer un cursor a un cliente, vamos a requerir de un `serializador` para que dicho cursor pueda ser transportado en un formato que pueda ser aceptado, como lo puede ser una cadena de texto en base 64.
 
 ```typescript
-
 import { CursorBase64Serializer, type CursorPayload } from 'criteria-utility';
 
-const cursorPayload:CursorPayload = [
+const cursorPayload: CursorPayload = [
   ['createdAt', '2026-09-24 11:56:26.472 -0500', 'DESC'],
   ['username', 'deivisss', 'ASC'],
   ['id', 10, 'DESC'],
-]
+];
 
-const cursorBase64Serializer = new CursorBase64Serializer()
+const cursorBase64Serializer = new CursorBase64Serializer();
 
 const encodeCursor: string = cursorBase64Serializer.encode(cursorPayload);
 
 const decodeCursor: CursorPayload = cursorBase64Serializer.decode(encodeCursor);
 ```
 
-> [!TIP] 
+> [!TIP]
 > Puedes implementar la interfaz `CursorSerializer<K,T>` para crear tus propios serializadores.
 
 ## Generadores
@@ -259,6 +257,8 @@ La utilidad `Criteria` actúa como un objeto que encapsula la lógica para filtr
 Un ejemplo podría ser que tienes un repositorio que se comunica con una base de datos [Postgres](https://www.postgresql.org/) y lo haces mediante la librería nativa [pg](https://github.com/brianc/node-postgres). Cuando recibimos el objeto `Criteria`, tenemos que generar el [SQL](https://en.wikipedia.org/wiki/SQL) correspondiente a la lógica encapsulada en `Criteria`. Para esto, la librería ya cuenta con `PostgresSqlGenerator`, que nos genera el `sql` a partir de un objeto `Criteria`.
 
 ```typescript
+import { Criteria, Pagination, PostgresSqlGenerator } from 'criteria-utility';
+
 type Book = {
   id: number;
   name: string;
@@ -298,7 +298,6 @@ El resultado sería:
   values: [ 4, '2008-01-08' ]
 }
 ```
-
 
 > [!IMPORTANT]
 > Cuando usas un cursor, este ya sabe exactamente cómo ordenar y paginar los siguientes resultados. Por eso, si defines un `orderBy` manual al mismo tiempo que pasas un cursor, el generador priorizará el cursor para evitar que la paginación se rompa o devuelva resultados inesperados.
