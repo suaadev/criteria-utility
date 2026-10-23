@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/no-base-to-string */
 
 export default abstract class CriteriaError extends Error {
+  private static readonly LIMIT_RECEIVED_OUTPUT = 40;
   constructor(name: string, message?: string, received?: unknown) {
-    const receivedFormat: string = formatLargeOutput(toString(received));
-    const receivedMessage = received ? `, received: ${receivedFormat}` : '';
+    const receivedFormat: string = formatLargeOutput(
+      toString(received),
+      CriteriaError.LIMIT_RECEIVED_OUTPUT,
+    );
+    const receivedMessage =
+      received !== undefined ? `, received: ${receivedFormat}` : '';
     super(`${message ?? `Criteria error`}${receivedMessage}`);
     this.name = name;
     this.cause = received;
@@ -22,7 +27,7 @@ function toString(input: unknown): string {
   return output;
 }
 
-function formatLargeOutput(output: string, limitOutput = 30): string {
+function formatLargeOutput(output: string, limitOutput: number): string {
   const finalOutput =
     output.length >= limitOutput
       ? `${output.slice(0, limitOutput)}...`
