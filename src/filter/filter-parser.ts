@@ -96,9 +96,24 @@ export function parse<T>(
       );
     }
 
-    const expressions: grammar.Expression[] = expressionsRaw.map((e) =>
-      parse(e),
-    );
+    const expressions: grammar.LogicExpression['left'][] = [];
+
+    for (const expressionRaw of expressionsRaw) {
+      const expression = parse(expressionRaw);
+      if (
+        expression.kind !== 'LogicExpression' &&
+        expression.kind !== 'ComparisonExpression' &&
+        expression.kind !== 'InExpression' &&
+        expression.kind !== 'NotExpression' &&
+        expression.kind !== 'FieldExpression'
+      ) {
+        throw new InvalidExpression(
+          'The LogicExpression requires valid expressions',
+          input,
+        );
+      }
+      expressions.push(expression);
+    }
 
     return appendExpressions(expressions, (le, re) =>
       buildLogicExpression(le, mapLogicOperator[key], re),
@@ -218,9 +233,9 @@ function buildComparisonExpression(
 }
 
 function buildLogicExpression(
-  left: grammar.Expression,
+  left: grammar.LogicExpression['left'],
   operator: grammar.LogicalOperator,
-  right: grammar.Expression,
+  right: grammar.LogicExpression['right'],
 ): grammar.LogicExpression {
   return { kind: 'LogicExpression', left, operator, right };
 }
@@ -251,14 +266,11 @@ function buildFieldExpression(value: string): grammar.FieldExpression {
   return { kind: 'FieldExpression', value };
 }
 
-function appendExpressions(
-  expressionsToAppend: grammar.Expression[],
-  builder: (
-    lastExpression: grammar.Expression,
-    currentExpression: grammar.Expression,
-  ) => grammar.Expression,
+function appendExpressions<T>(
+  expressionsToAppend: T[],
+  builder: (lastExpression: T, currentExpression: T) => T,
 ) {
-  let lastExpression: grammar.Expression = expressionsToAppend[0];
+  let lastExpression: T = expressionsToAppend[0];
 
   for (let i = 1; i < expressionsToAppend.length; i++) {
     const expressionToAppend = expressionsToAppend[i];

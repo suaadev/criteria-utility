@@ -44,9 +44,19 @@ export interface InExpression {
 
 export interface LogicExpression {
   kind: 'LogicExpression';
-  left: Expression;
+  left:
+    | LogicExpression
+    | ComparisonExpression
+    | InExpression
+    | NotExpression
+    | FieldExpression;
   operator: LogicalOperator;
-  right: Expression;
+  right:
+    | LogicExpression
+    | ComparisonExpression
+    | InExpression
+    | NotExpression
+    | FieldExpression;
 }
 
 export type Expression =
