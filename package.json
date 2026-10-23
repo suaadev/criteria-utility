@@ -7,7 +7,6 @@
   "type": "module",
   "main": "./lib/index.js",
   "scripts": {
-    "start": "npx tsx usage.ts",
     "compile": "npx tsc",
     "test": "jest --verbose --coverage",
     "format": "prettier --write --config .prettierrc ."
@@ -24,15 +23,15 @@
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@jest/globals": "^30.5.1",
-    "@swc/core": "^1.16.2",
+    "@jest/globals": "^30.5.2",
+    "@swc/core": "^1.16.20",
     "@swc/jest": "^0.2.39",
-    "@types/node": "^22.20.3",
-    "eslint": "^10.11.0",
-    "jest": "^30.5.1",
-    "prettier": "^3.9.9",
+    "@types/node": "^22.20.5",
+    "eslint": "^10.13.0",
+    "jest": "^30.5.2",
+    "prettier": "^3.9.10",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-7": "npm:typescript@^7.0.2",
-    "typescript-eslint": "^8.71.0"
+    "typescript-eslint": "^8.72.0"
   }
 }
