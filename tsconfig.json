@@ -11,6 +11,6 @@
     "types": ["node"],
     "strictNullChecks": true
   },
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "tests"],
+  "exclude": ["node_modules"],
   "include": ["src/**/*.ts"]
 }

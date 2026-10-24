@@ -1,7 +1,7 @@
-import { describe, expect, it } from '@jest/globals';
 import * as FilterParser from '../src/filter/filter-parser';
 import { ExpressionRaw } from '../src/filter/basic-grammar';
 import InvalidExpression from '../src/exceptions/invalid-expression';
+import { describe, expect, it } from 'vitest';
 
 describe('FilterParser', () => {
   describe('general expressions', () => {

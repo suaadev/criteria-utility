@@ -7,9 +7,12 @@
   "type": "module",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "npx tsc",
-    "test": "jest --verbose --coverage",
-    "format": "prettier --write --config .prettierrc ."
+    "build": "tsc",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write --config .prettierrc .",
+    "prepare": "husky",
+    "lint": "eslint ."
   },
   "types": "./lib/index.d.ts",
   "exports": {
@@ -21,17 +24,26 @@
     "README.md",
     "LICENSE"
   ],
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^10.0.1",
-    "@jest/globals": "^30.5.2",
-    "@swc/core": "^1.16.20",
     "@swc/jest": "^0.2.39",
     "@types/node": "^22.20.5",
+    "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.13.0",
-    "jest": "^30.5.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-7": "npm:typescript@^7.0.2",
-    "typescript-eslint": "^8.72.0"
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
   }
 }

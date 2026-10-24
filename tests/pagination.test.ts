@@ -1,8 +1,8 @@
-import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 import Pagination from '../src/pagination';
 import { CursorSerializer } from '../src/cursor-serializers/cursor-serializer';
 import InvalidPage from '../src/exceptions/invalid-page';
 import InvalidCursorPayload from '../src/exceptions/invalid-cursor-payload';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('Pagination', () => {
   describe('Pagination by page', () => {
@@ -56,13 +56,13 @@ describe('Pagination', () => {
   });
 
   describe('Pagination by cursor', () => {
-    const encode = jest.fn().mockReturnValue('.....');
-    const decode = jest.fn();
+    const encode = vi.fn().mockReturnValue('.....');
+    const decode = vi.fn();
 
     const mockCursorParser: CursorSerializer<any> = { encode, decode };
 
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it('should throw an error when cursor criterion has invalid elements', () => {

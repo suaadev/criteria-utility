@@ -1,7 +1,7 @@
-import { describe, expect, it } from '@jest/globals';
 import { CursorPayload } from '../src/pagination';
 import { CursorBase64Serializer } from '../src/cursor-serializers/cursor-base64-serializer';
 import { Buffer } from 'node:buffer';
+import { describe, expect, it } from 'vitest';
 
 describe('Cursor base64 serializer', () => {
   const cursorBase64Serializer = new CursorBase64Serializer();
