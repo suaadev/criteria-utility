@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Criteria } from '../src/criteria';
 import { CursorSerializer } from '../src/cursor-serializers/cursor-serializer';
 import InvalidLimit from '../src/exceptions/invalid-limit';
@@ -347,13 +347,13 @@ describe('Criteria', () => {
   });
 
   describe('Pagination criteria', () => {
-    const encode = jest.fn().mockReturnValue('.....');
-    const decode = jest.fn();
+    const encode = vi.fn().mockReturnValue('.....');
+    const decode = vi.fn();
 
     const mockCursorParser: CursorSerializer<any> = { encode, decode };
 
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it('should pass when pagination and limit are provided', () => {
