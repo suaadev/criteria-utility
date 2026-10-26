@@ -42,7 +42,7 @@ export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
 
   // Array Expression
   if (Array.isArray(input)) {
-    const items: ast.ArrayNode['items'] = [];
+    const items = [];
 
     for (const item of input) {
       const expression = parse(item);
@@ -214,7 +214,7 @@ function validateFieldExpression(field: string) {
 }
 
 function buildLiteralNode(value: ast.LiteralValue): ast.LiteralNode {
-  return { kind: 'LiteralNode', value };
+  return Object.freeze({ kind: 'LiteralNode', value });
 }
 
 function buildComparisonNode(
@@ -222,7 +222,7 @@ function buildComparisonNode(
   operator: ast.NodeComparisonOperator,
   right: ast.ExpressionNode,
 ): ast.ComparisonNode {
-  return { kind: 'ComparisonNode', left, operator, right };
+  return Object.freeze({ kind: 'ComparisonNode', left, operator, right });
 }
 
 function buildLogicalNode(
@@ -230,27 +230,27 @@ function buildLogicalNode(
   operator: ast.NodeLogicalOperator,
   right: ast.LogicalNode['right'],
 ): ast.LogicalNode {
-  return { kind: 'LogicalNode', left, operator, right };
+  return Object.freeze({ kind: 'LogicalNode', left, operator, right });
 }
 
 function buildNotNode(expression: ast.NotNode['expression']): ast.NotNode {
-  return { kind: 'NotNode', expression };
+  return Object.freeze({ kind: 'NotNode', expression });
 }
 
 function buildArrayNode(items: ast.ArrayNode['items']): ast.ArrayNode {
-  return {
+  return Object.freeze({
     kind: 'ArrayNode',
-    items,
-  };
+    items: Object.freeze(items),
+  });
 }
 
 function buildInNode(
   value: ast.InNode['value'],
   arrayExpression: ast.ArrayNode,
 ): ast.InNode {
-  return { kind: 'InNode', arrayExpression, value };
+  return Object.freeze({ kind: 'InNode', arrayExpression, value });
 }
 
 function buildFieldNode(value: string): ast.FieldNode {
-  return { kind: 'FieldNode', value };
+  return Object.freeze({ kind: 'FieldNode', value });
 }

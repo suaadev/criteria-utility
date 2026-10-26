@@ -11,9 +11,11 @@ export type CursorPayload = CursorCriterion[];
 
 export default class Pagination {
   private constructor(
-    readonly page: number | null,
-    readonly cursor: CursorPayload | null,
-  ) {}
+    private readonly page_: number | null,
+    private readonly cursor_: CursorPayload | null,
+  ) {
+    Object.freeze(this);
+  }
 
   static byPage(page = 1) {
     this.validatePage(page);
@@ -67,15 +69,24 @@ export default class Pagination {
         payload,
       );
     }
+    Object.freeze(payload);
     for (const element of payload) {
       this.validateCursorCriterion(element);
+      Object.freeze(element);
     }
+  }
+  get page(): Readonly<number | null> {
+    return this.page_;
+  }
+
+  get cursor(): Readonly<CursorPayload | null> {
+    return this.cursor_;
   }
 
   toObjectPlain() {
-    return {
-      page: this.page,
-      cursor: this.cursor,
-    };
+    return Object.freeze({
+      page: this.page_,
+      cursor: this.cursor_,
+    });
   }
 }

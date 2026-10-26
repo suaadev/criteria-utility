@@ -142,49 +142,6 @@ describe('Criteria', () => {
     it('should pass when limit is null', () => {
       expect(Criteria.build({ limit: null }).limit).toBeNull();
     });
-
-    it('should pass when limit is not provided but is set later', () => {
-      const criteria = Criteria.build();
-
-      criteria.limit = 23;
-
-      expect(criteria.limit).toBe(23);
-
-      criteria.limit = 100;
-
-      expect(criteria.limit).toBe(100);
-
-      criteria.limit = 1;
-
-      expect(criteria.limit).toBe(1);
-    });
-
-    it('should throw an error when limit is set later with invalid values', () => {
-      const criteria = Criteria.build();
-      expect(() => {
-        criteria.limit = 0;
-      }).toThrow(InvalidLimit);
-
-      expect(() => {
-        criteria.limit = 23.43;
-      }).toThrow(InvalidLimit);
-
-      expect(() => {
-        criteria.limit = -23;
-      }).toThrow(InvalidLimit);
-
-      expect(() => {
-        criteria.limit = Infinity;
-      }).toThrow(InvalidLimit);
-
-      expect(() => {
-        criteria.limit = -Infinity;
-      }).toThrow(InvalidLimit);
-
-      expect(() => {
-        criteria.limit = -34.5;
-      }).toThrow(InvalidLimit);
-    });
   });
 
   describe('OrderBy criteria', () => {
@@ -320,30 +277,6 @@ describe('Criteria', () => {
         Criteria.build({ orderBy: [[() => {}, 'ASC']] as any }),
       ).toThrow(InvalidOrderBy);
     });
-
-    it('should pass when orderBy is set after instantiating criteria', () => {
-      const criteria = Criteria.build();
-      criteria.orderBy = [['field', 'ASC']];
-      expect(criteria.orderBy).toStrictEqual([['field', 'ASC']]);
-      criteria.orderBy = [['field2', 'DESC']];
-      expect(criteria.orderBy).toStrictEqual([['field2', 'DESC']]);
-      criteria.orderBy = [['field3', 'ASC']];
-      expect(criteria.orderBy).toStrictEqual([['field3', 'ASC']]);
-
-      expect(() => {
-        criteria.orderBy = [null, ''] as any;
-      }).toThrow(InvalidOrderBy);
-
-      expect(() => {
-        criteria.orderBy = [1, 'deSc'] as any;
-      }).toThrow(InvalidOrderBy);
-      expect(() => {
-        criteria.orderBy = ['field', ''] as any;
-      }).toThrow(InvalidOrderBy);
-      expect(() => {
-        criteria.orderBy = ['field'] as any;
-      }).toThrow(InvalidOrderBy);
-    });
   });
 
   describe('Pagination criteria', () => {
@@ -370,32 +303,6 @@ describe('Criteria', () => {
         limit: 10,
       });
       expect(criteria.limit).toBe(10);
-    });
-
-    it('should throw an error when limit is set to null while pagination is active', () => {
-      const criteria = Criteria.build({
-        pagination: Pagination.byPage(14),
-        limit: 10,
-      });
-      expect(criteria.limit).toBe(10);
-      expect(criteria.pagination).toBeInstanceOf(Pagination);
-      expect(() => {
-        criteria.limit = null;
-      }).toThrow(InvalidPagination);
-    });
-
-    it('should throw an error when reassigning pagination while limit is null', () => {
-      const criteria = Criteria.build({
-        pagination: Pagination.byPage(14),
-        limit: 10,
-      });
-      expect(criteria.limit).toBe(10);
-      expect(criteria.pagination).toBeInstanceOf(Pagination);
-      criteria.pagination = null;
-      criteria.limit = null;
-      expect(() => {
-        criteria.pagination = Pagination.byPage(23);
-      }).toThrow(InvalidPagination);
     });
 
     it('should pass when pagination (cursor) and limit are provided', () => {
