@@ -1,7 +1,7 @@
 import InvalidLimit from './exceptions/invalid-limit.js';
 import InvalidOrderBy from './exceptions/invalid-orderby.js';
 import InvalidPagination from './exceptions/invalid-pagination.js';
-import { ExpressionRaw } from './filter/basic-grammar.js';
+import { ExpressionNode } from './filter/ast.js';
 import * as FilterParser from './filter/filter-parser.js';
 import { Expression } from './filter/grammar.js';
 import Pagination from './pagination.js';
@@ -13,7 +13,7 @@ export type Sort = 'ASC' | 'DESC';
 export type OrderByRaw<T> = ([keyof T, Sort] | [string, Sort])[];
 
 export interface CriteriaOptions<T> {
-  filter?: ExpressionRaw<T> | Record<string, unknown> | null;
+  filter?: Expression<T> | Record<string, unknown> | null;
   pagination?: Pagination | null;
   orderBy?: OrderByRaw<T> | null;
   limit?: number | null;
@@ -23,7 +23,7 @@ export class Criteria<T = unknown> {
   private orderBy_: OrderBy;
 
   private constructor(
-    readonly filterExpression: Expression | null,
+    readonly filterExpression: ExpressionNode | null,
     private pagination_: Pagination | null,
     orderBy: OrderByRaw<T>,
     private limit_: number | null,
