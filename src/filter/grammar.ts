@@ -3,14 +3,16 @@ export type LogicalOperator = 'and' | 'or';
 export type ComparisonOperator =
   'equals' | 'diff' | 'gt' | 'lt' | 'gte' | 'lte';
 
+export type FieldExpression = `$${string}`;
+
 export type LiteralExpression = number | boolean | null | string;
 
-export type ComparisonOperand<T> = Partial<{
-  [K in ComparisonOperator]: Expression<T>;
-}>;
+export type ComparisonOperand<T> = Partial<Record<ComparisonOperator, T>>;
 
 export type ComparisonExpression<T> = Partial<{
-  [Key in keyof T]: ComparisonOperand<T>;
+  [K in keyof T]: ComparisonOperand<
+    T extends object ? T[K] | FieldExpression : Expression<T>
+  >;
 }>;
 
 export type ArrayExpression = (LiteralExpression | ArrayExpression)[];
@@ -20,7 +22,7 @@ export interface InOperand {
 }
 
 export type InExpression<T> = Partial<{
-  [Key in keyof T]: InOperand;
+  [K in keyof T]: InOperand;
 }>;
 
 export type LogicalExpression<T> = Partial<

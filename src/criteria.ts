@@ -10,16 +10,16 @@ type OrderBy = Map<string, Sort>;
 
 export type Sort = 'ASC' | 'DESC';
 
-export type OrderByRaw<T> = ([keyof T, Sort] | [string, Sort])[];
+export type OrderByRaw<T> = [T extends object ? keyof T : string, Sort][];
 
-export interface CriteriaOptions<T> {
-  filter?: Expression<T> | Record<string, unknown> | null;
+export interface CriteriaOptions<T = Record<string, unknown>> {
+  filter?: Expression<T> | null;
   pagination?: Pagination | null;
   orderBy?: OrderByRaw<T> | null;
   limit?: number | null;
 }
 
-export class Criteria<T = unknown> {
+export class Criteria<T = Record<string, unknown>> {
   private orderBy_: OrderBy;
 
   private constructor(
@@ -34,7 +34,9 @@ export class Criteria<T = unknown> {
     Object.freeze(this);
   }
 
-  static build<T>(criteriaOptions: CriteriaOptions<T> = {}) {
+  static build<T = Record<string, unknown>>(
+    criteriaOptions: CriteriaOptions<NoInfer<T>> = {},
+  ) {
     const { filter, limit, orderBy, pagination } = criteriaOptions;
 
     const filterExpression = filter ? FilterParser.parse(filter) : null;
