@@ -24,11 +24,23 @@ export type InExpressionRaw<T> = Partial<{
 }>;
 
 export type ConditionalRaw<T> = Partial<
-  Record<LogicOperatorRaw, ExpressionRaw<T>[]>
+  Record<
+    LogicOperatorRaw,
+    (
+      | ConditionalRaw<T>
+      | ComparisonExpressionRaw<T>
+      | InExpressionRaw<T>
+      | NotExpressionRaw<T>
+    )[]
+  >
 >;
 
 export interface NotExpressionRaw<T> {
-  not: ExpressionRaw<T>;
+  not:
+    | ConditionalRaw<T>
+    | ComparisonExpressionRaw<T>
+    | InExpressionRaw<T>
+    | NotExpressionRaw<T>;
 }
 
 export type ExpressionRaw<T = Record<string, unknown>> =
