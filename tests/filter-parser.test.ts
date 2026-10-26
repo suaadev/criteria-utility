@@ -59,21 +59,21 @@ describe('FilterParser', () => {
     });
 
     it('should throw InvalidExpression when logical array has fewer than two elements', () => {
-      const badExpression: ExpressionRaw = {
+      const badExpression = {
         not: {
           or: [true],
         },
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         InvalidExpression,
       );
     });
 
     it('should throw InvalidExpression when logical array contains an empty object', () => {
-      const badExpression: ExpressionRaw = {
+      const badExpression = {
         and: [{}, 1],
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         InvalidExpression,
       );
     });
