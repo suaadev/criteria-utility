@@ -1,8 +1,8 @@
 import { Criteria, Sort } from '../criteria.js';
-import * as grammar from '../filter/grammar.js';
+import * as ast from '../filter/ast.js';
 import { CursorPayload } from '../pagination.js';
 
-const mapComparisonOperatorsToSql: Record<grammar.ComparisonOperator, string> =
+const mapComparisonOperatorsToSql: Record<ast.NodeComparisonOperator, string> =
   {
     '==': '=',
     '!=': '!=',
@@ -12,17 +12,17 @@ const mapComparisonOperatorsToSql: Record<grammar.ComparisonOperator, string> =
     '>': '>',
   };
 
-const mapLogicOperatorsToSql: Record<grammar.LogicalOperator, string> = {
+const mapLogicOperatorsToSql: Record<ast.NodeLogicalOperator, string> = {
   '&&': 'AND',
   '||': 'OR',
 };
 
 const validsExpInLogicExp = [
-  'FieldExpression',
-  'ComparisonExpression',
-  'LogicExpression',
-  'NotExpression',
-  'InExpression',
+  'FieldNode',
+  'ComparisonNode',
+  'LogicalNode',
+  'NotNode',
+  'InNode',
 ];
 
 export function fromCriteria<T>(criteria: Criteria<T>, alias = '') {
@@ -86,20 +86,20 @@ export function fromCriteria<T>(criteria: Criteria<T>, alias = '') {
 }
 
 function expressionToSql(
-  expression: grammar.Expression,
+  expression: ast.ExpressionNode,
   alias = '',
   valuesParams: unknown[],
 ): string {
-  if (expression.kind === 'LiteralExpression') {
+  if (expression.kind === 'LiteralNode') {
     valuesParams.push(expression.value);
     return `$${valuesParams.length}`;
   }
 
-  if (expression.kind === 'FieldExpression') {
+  if (expression.kind === 'FieldNode') {
     return buildFieldWithAlias(expression.value, alias);
   }
 
-  if (expression.kind === 'ComparisonExpression') {
+  if (expression.kind === 'ComparisonNode') {
     const leftExpression: string = expressionToSql(
       expression.left,
       alias,
@@ -115,7 +115,7 @@ function expressionToSql(
     return `(${leftExpression} ${mapComparisonOperatorsToSql[expression.operator]} ${rightExpression})`;
   }
 
-  if (expression.kind === 'LogicExpression') {
+  if (expression.kind === 'LogicalNode') {
     validateOperandInLogicExp('left', expression.left);
 
     validateOperandInLogicExp('right', expression.right);
@@ -135,7 +135,7 @@ function expressionToSql(
     return `(${leftExpression} ${mapLogicOperatorsToSql[expression.operator]} ${rightExpression})`;
   }
 
-  if (expression.kind === 'NotExpression') {
+  if (expression.kind === 'NotNode') {
     const expr: string = expressionToSql(
       expression.expression,
       alias,
@@ -145,7 +145,7 @@ function expressionToSql(
     return `(NOT ${expr})`;
   }
 
-  if (expression.kind === 'ArrayExpression') {
+  if (expression.kind === 'ArrayNode') {
     const expr: string[] = [];
     for (const itemExpression of expression.items) {
       expr.push(expressionToSql(itemExpression, alias, valuesParams));
@@ -153,7 +153,7 @@ function expressionToSql(
     return `(${expr.join(', ')})`;
   }
 
-  if (expression.kind === 'InExpression') {
+  if (expression.kind === 'InNode') {
     const value = expressionToSql(expression.value, alias, valuesParams);
     const arrayExpression = expressionToSql(
       expression.arrayExpression,
@@ -213,7 +213,7 @@ function buildCursorStatements(
 
 function validateOperandInLogicExp(
   type: 'left' | 'right',
-  expression: grammar.Expression,
+  expression: ast.ExpressionNode,
 ) {
   if (!validsExpInLogicExp.includes(expression.kind)) {
     throw new SyntaxError(

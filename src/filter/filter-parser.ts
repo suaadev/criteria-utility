@@ -1,10 +1,10 @@
 import InvalidExpression from '../exceptions/invalid-expression.js';
-import * as basicGrammar from './basic-grammar.js';
+import * as ast from './ast.js';
 import * as grammar from './grammar.js';
 
-const mapRawComparisonOperator: Record<
-  basicGrammar.ComparisonOperatorsRaw,
-  grammar.ComparisonOperator
+const mapComparisonOperator: Record<
+  grammar.ComparisonOperator,
+  ast.NodeComparisonOperator
 > = {
   equals: '==',
   diff: '!=',
@@ -14,9 +14,9 @@ const mapRawComparisonOperator: Record<
   lte: '<=',
 };
 
-const mapLogicOperator: Record<
-  basicGrammar.LogicOperatorRaw,
-  grammar.LogicalOperator
+const mapLogicalOperator: Record<
+  grammar.LogicalOperator,
+  ast.NodeLogicalOperator
 > = {
   and: '&&',
   or: '||',
@@ -24,14 +24,12 @@ const mapLogicOperator: Record<
 
 const idExpressionRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
-export function parse<T>(
-  input: basicGrammar.ExpressionRaw<T>,
-): grammar.Expression {
+export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
   // Field expressions
   if (typeof input === 'string' && input.charAt(0) === '$') {
     const field: string = input.slice(1);
     validateFieldExpression(field);
-    return buildFieldExpression(field);
+    return buildFieldNode(field);
   }
 
   // Literal expressions
@@ -39,19 +37,19 @@ export function parse<T>(
     input === null ||
     ['string', 'number', 'boolean'].includes(typeof input)
   ) {
-    return buildLiteralExpression(input as basicGrammar.LiteralExpressionRaw);
+    return buildLiteralNode(input as grammar.LiteralExpression);
   }
 
   // Array Expression
   if (Array.isArray(input)) {
-    const items: grammar.ArrayExpression['items'] = [];
+    const items: ast.ArrayNode['items'] = [];
 
     for (const item of input) {
       const expression = parse(item);
       if (
-        expression.kind !== 'LiteralExpression' &&
-        expression.kind !== 'FieldExpression' &&
-        expression.kind !== 'ArrayExpression'
+        expression.kind !== 'LiteralNode' &&
+        expression.kind !== 'FieldNode' &&
+        expression.kind !== 'ArrayNode'
       ) {
         throw new InvalidExpression(
           'The Array expression requires a LiteralExpression, ArrayExpression, or FieldExpression',
@@ -60,7 +58,7 @@ export function parse<T>(
       }
       items.push(expression);
     }
-    return buildArrayExpression(items);
+    return buildArrayNode(items);
   }
 
   if (typeof input != 'object') {
@@ -81,31 +79,31 @@ export function parse<T>(
   // Logic operators
 
   if (key === 'and' || key === 'or') {
-    const expressionsRaw = (input as basicGrammar.ConditionalRaw<T>)[key];
+    const expressionsInput = (input as grammar.LogicalExpression<T>)[key];
 
-    if (!Array.isArray(expressionsRaw))
+    if (!Array.isArray(expressionsInput))
       throw new InvalidExpression(
         `The Logic expression must be an array of expressions.`,
         input,
       );
 
-    if (expressionsRaw.length <= 1) {
+    if (expressionsInput.length <= 1) {
       throw new InvalidExpression(
         'The Logic expression must contain at least two arguments.',
         input,
       );
     }
 
-    const expressions: grammar.LogicExpression['left'][] = [];
+    const expressions: ast.LogicalNode['left'][] = [];
 
-    for (const expressionRaw of expressionsRaw) {
-      const expression = parse(expressionRaw);
+    for (const expressionInput of expressionsInput) {
+      const expression = parse(expressionInput);
       if (
-        expression.kind !== 'LogicExpression' &&
-        expression.kind !== 'ComparisonExpression' &&
-        expression.kind !== 'InExpression' &&
-        expression.kind !== 'NotExpression' &&
-        expression.kind !== 'FieldExpression'
+        expression.kind !== 'LogicalNode' &&
+        expression.kind !== 'ComparisonNode' &&
+        expression.kind !== 'InNode' &&
+        expression.kind !== 'NotNode' &&
+        expression.kind !== 'FieldNode'
       ) {
         throw new InvalidExpression(
           'The LogicExpression requires valid expressions',
@@ -116,23 +114,23 @@ export function parse<T>(
     }
 
     return expressions.reduce((le, re) =>
-      buildLogicExpression(le, mapLogicOperator[key], re),
+      buildLogicalNode(le, mapLogicalOperator[key], re),
     );
   }
 
   // Not expression
 
   if (key === 'not') {
-    const expressionsRaw = (input as basicGrammar.NotExpressionRaw<T>)['not'];
+    const expressionInput = (input as grammar.NotExpression<T>)['not'];
 
-    const expression: grammar.Expression = parse(expressionsRaw);
+    const expression: ast.ExpressionNode = parse(expressionInput);
 
     if (
-      expression.kind !== 'FieldExpression' &&
-      expression.kind !== 'ComparisonExpression' &&
-      expression.kind !== 'LogicExpression' &&
-      expression.kind !== 'NotExpression' &&
-      expression.kind !== 'InExpression'
+      expression.kind !== 'FieldNode' &&
+      expression.kind !== 'ComparisonNode' &&
+      expression.kind !== 'LogicalNode' &&
+      expression.kind !== 'NotNode' &&
+      expression.kind !== 'InNode'
     ) {
       throw new InvalidExpression(
         `The NOT expression requires a valid expression`,
@@ -140,7 +138,7 @@ export function parse<T>(
       );
     }
 
-    return buildNotExpression(expression);
+    return buildNotNode(expression);
   }
 
   validateFieldExpression(key);
@@ -150,10 +148,7 @@ export function parse<T>(
   const operation = (
     input as Record<
       keyof T,
-      Partial<
-        basicGrammar.InExpressionRightRaw &
-          basicGrammar.ComparisonExpressionRightRaw<T>
-      >
+      Partial<grammar.InOperand & grammar.ComparisonOperand<T>>
     >
   )[field];
 
@@ -174,36 +169,36 @@ export function parse<T>(
     operator === 'gte' ||
     operator === 'lte'
   ) {
-    const expressionsRaw = operation[operator];
+    const expressionInput = operation[operator];
 
-    return buildComparisonExpression(
-      buildFieldExpression(key),
-      mapRawComparisonOperator[operator],
-      parse(expressionsRaw ?? null),
+    return buildComparisonNode(
+      buildFieldNode(key),
+      mapComparisonOperator[operator],
+      parse(expressionInput ?? null),
     );
   }
 
   // In expression
   if (operator === 'in') {
-    const arrayRaw = operation[operator];
+    const arrayInput = operation[operator];
 
-    if (!Array.isArray(arrayRaw) || arrayRaw.length === 0) {
+    if (!Array.isArray(arrayInput) || arrayInput.length === 0) {
       throw new InvalidExpression(
         'The Array expression in IN expression must contain at least one item',
         input,
       );
     }
 
-    const arrayExpression = parse(arrayRaw);
+    const arrayNode = parse(arrayInput);
 
-    if (arrayExpression.kind !== 'ArrayExpression') {
+    if (arrayNode.kind !== 'ArrayNode') {
       throw new InvalidExpression(
         'The IN expression must contain an array of literal or field expressions.',
-        arrayExpression,
+        arrayNode,
       );
     }
 
-    return buildInExpression(buildFieldExpression(key), arrayExpression);
+    return buildInNode(buildFieldNode(key), arrayNode);
   }
 
   throw new InvalidExpression('The input expression is invalid', input);
@@ -218,50 +213,44 @@ function validateFieldExpression(field: string) {
   }
 }
 
-function buildLiteralExpression(
-  value: grammar.LiteralExpressionValids,
-): grammar.LiteralExpression {
-  return { kind: 'LiteralExpression', value };
+function buildLiteralNode(value: ast.LiteralValue): ast.LiteralNode {
+  return { kind: 'LiteralNode', value };
 }
 
-function buildComparisonExpression(
-  left: grammar.Expression,
-  operator: grammar.ComparisonOperator,
-  right: grammar.Expression,
-): grammar.ComparisonExpression {
-  return { kind: 'ComparisonExpression', left, operator, right };
+function buildComparisonNode(
+  left: ast.ExpressionNode,
+  operator: ast.NodeComparisonOperator,
+  right: ast.ExpressionNode,
+): ast.ComparisonNode {
+  return { kind: 'ComparisonNode', left, operator, right };
 }
 
-function buildLogicExpression(
-  left: grammar.LogicExpression['left'],
-  operator: grammar.LogicalOperator,
-  right: grammar.LogicExpression['right'],
-): grammar.LogicExpression {
-  return { kind: 'LogicExpression', left, operator, right };
+function buildLogicalNode(
+  left: ast.LogicalNode['left'],
+  operator: ast.NodeLogicalOperator,
+  right: ast.LogicalNode['right'],
+): ast.LogicalNode {
+  return { kind: 'LogicalNode', left, operator, right };
 }
 
-function buildNotExpression(
-  expression: grammar.NotExpression['expression'],
-): grammar.NotExpression {
-  return { kind: 'NotExpression', expression };
+function buildNotNode(expression: ast.NotNode['expression']): ast.NotNode {
+  return { kind: 'NotNode', expression };
 }
 
-function buildArrayExpression(
-  items: grammar.ArrayExpression['items'],
-): grammar.ArrayExpression {
+function buildArrayNode(items: ast.ArrayNode['items']): ast.ArrayNode {
   return {
-    kind: 'ArrayExpression',
+    kind: 'ArrayNode',
     items,
   };
 }
 
-function buildInExpression(
-  value: grammar.InExpression['value'],
-  arrayExpression: grammar.ArrayExpression,
-): grammar.InExpression {
-  return { kind: 'InExpression', arrayExpression, value };
+function buildInNode(
+  value: ast.InNode['value'],
+  arrayExpression: ast.ArrayNode,
+): ast.InNode {
+  return { kind: 'InNode', arrayExpression, value };
 }
 
-function buildFieldExpression(value: string): grammar.FieldExpression {
-  return { kind: 'FieldExpression', value };
+function buildFieldNode(value: string): ast.FieldNode {
+  return { kind: 'FieldNode', value };
 }
