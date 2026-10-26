@@ -1,69 +1,52 @@
-export type LiteralExpressionValids = number | string | boolean | null;
+export type LogicalOperator = 'and' | 'or';
 
-export type LogicalOperator = '&&' | '||';
+export type ComparisonOperator =
+  'equals' | 'diff' | 'gt' | 'lt' | 'gte' | 'lte';
 
-export type ComparisonOperator = '==' | '!=' | '>' | '<' | '>=' | '<=';
+export type LiteralExpression = number | boolean | null | string;
 
-export interface LiteralExpression {
-  kind: 'LiteralExpression';
-  value: LiteralExpressionValids;
+export type ComparisonOperand<T> = Partial<{
+  [K in ComparisonOperator]: Expression<T>;
+}>;
+
+export type ComparisonExpression<T> = Partial<{
+  [Key in keyof T]: ComparisonOperand<T>;
+}>;
+
+export type ArrayExpression = (LiteralExpression | ArrayExpression)[];
+
+export interface InOperand {
+  in: ArrayExpression;
 }
 
-export interface NotExpression {
-  kind: 'NotExpression';
-  expression:
-    | LogicExpression
-    | ComparisonExpression
-    | FieldExpression
-    | InExpression
-    | NotExpression;
+export type InExpression<T> = Partial<{
+  [Key in keyof T]: InOperand;
+}>;
+
+export type LogicalExpression<T> = Partial<
+  Record<
+    LogicalOperator,
+    (
+      | LogicalExpression<T>
+      | ComparisonExpression<T>
+      | InExpression<T>
+      | NotExpression<T>
+    )[]
+  >
+>;
+
+export interface NotExpression<T> {
+  not:
+    | LogicalExpression<T>
+    | ComparisonExpression<T>
+    | InExpression<T>
+    | NotExpression<T>;
 }
 
-export interface ComparisonExpression {
-  kind: 'ComparisonExpression';
-  left: Expression;
-  operator: ComparisonOperator;
-  right: Expression;
-}
-
-export interface FieldExpression {
-  kind: 'FieldExpression';
-  value: string;
-}
-
-export interface ArrayExpression {
-  kind: 'ArrayExpression';
-  items: (LiteralExpression | FieldExpression | ArrayExpression)[];
-}
-
-export interface InExpression {
-  kind: 'InExpression';
-  value: FieldExpression | LiteralExpression;
-  arrayExpression: ArrayExpression;
-}
-
-export interface LogicExpression {
-  kind: 'LogicExpression';
-  left:
-    | LogicExpression
-    | ComparisonExpression
-    | InExpression
-    | NotExpression
-    | FieldExpression;
-  operator: LogicalOperator;
-  right:
-    | LogicExpression
-    | ComparisonExpression
-    | InExpression
-    | NotExpression
-    | FieldExpression;
-}
-
-export type Expression =
+export type Expression<T = Record<string, unknown>> =
+  | NotExpression<T>
+  | LogicalExpression<T>
+  | ComparisonExpression<T>
+  | InExpression<T>
   | LiteralExpression
-  | FieldExpression
-  | LogicExpression
-  | ComparisonExpression
-  | InExpression
-  | NotExpression
   | ArrayExpression;
