@@ -20,6 +20,8 @@ import type {
   CursorSort,
 } from './pagination.js';
 import Pagination from './pagination.js';
+import * as Ast from './filter/ast.js';
+import * as Grammar from './filter/grammar.js';
 
 export {
   Criteria,
@@ -33,6 +35,8 @@ export {
   InvalidPagination,
   Pagination,
   PostgresSqlGenerator,
+  Ast,
+  Grammar,
   type CriteriaOptions,
   type CursorCriterion,
   type CursorPayload,

@@ -1,31 +1,31 @@
 import * as FilterParser from '../src/filter/filter-parser';
-import { ExpressionRaw } from '../src/filter/basic-grammar';
+import { Expression } from '../src/filter/grammar';
 import InvalidExpression from '../src/exceptions/invalid-expression';
 import { describe, expect, it } from 'vitest';
 
 describe('FilterParser', () => {
   describe('general expressions', () => {
     it('should parse valid logical and comparison expressions', () => {
-      const goodExpression: ExpressionRaw = {
+      const goodExpression: Expression = {
         and: [{ username: { diff: 'jazzz' } }, { age: { lte: '$parentAage' } }],
       };
 
       const parserResult = FilterParser.parse(goodExpression);
 
       expect(parserResult).toMatchObject({
-        kind: 'LogicExpression',
+        kind: 'LogicalNode',
         left: {
-          kind: 'ComparisonExpression',
-          left: { kind: 'FieldExpression', value: 'username' },
+          kind: 'ComparisonNode',
+          left: { kind: 'FieldNode', value: 'username' },
           operator: '!=',
-          right: { kind: 'LiteralExpression', value: 'jazzz' },
+          right: { kind: 'LiteralNode', value: 'jazzz' },
         },
         operator: '&&',
         right: {
-          kind: 'ComparisonExpression',
-          left: { kind: 'FieldExpression', value: 'age' },
+          kind: 'ComparisonNode',
+          left: { kind: 'FieldNode', value: 'age' },
           operator: '<=',
-          right: { kind: 'FieldExpression', value: 'parentAage' },
+          right: { kind: 'FieldNode', value: 'parentAage' },
         },
       });
     });
@@ -42,7 +42,7 @@ describe('FilterParser', () => {
     it('should parse null as a LiteralExpression', () => {
       const badExpression = null as any;
       expect(FilterParser.parse(badExpression)).toMatchObject({
-        kind: 'LiteralExpression',
+        kind: 'LiteralNode',
         value: null,
       });
     });
@@ -97,7 +97,7 @@ describe('FilterParser', () => {
     });
 
     it('should parse an or expression with multiple conditions', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         or: [
           { role: { equals: 'admin' } },
           { role: { equals: 'editor' } },
@@ -108,29 +108,29 @@ describe('FilterParser', () => {
       const result = FilterParser.parse(expression);
 
       expect(result).toMatchObject({
-        kind: 'LogicExpression',
+        kind: 'LogicalNode',
         operator: '||',
         left: {
-          kind: 'LogicExpression',
+          kind: 'LogicalNode',
           operator: '||',
           left: {
-            kind: 'ComparisonExpression',
-            left: { kind: 'FieldExpression', value: 'role' },
+            kind: 'ComparisonNode',
+            left: { kind: 'FieldNode', value: 'role' },
             operator: '==',
-            right: { kind: 'LiteralExpression', value: 'admin' },
+            right: { kind: 'LiteralNode', value: 'admin' },
           },
           right: {
-            kind: 'ComparisonExpression',
-            left: { kind: 'FieldExpression', value: 'role' },
+            kind: 'ComparisonNode',
+            left: { kind: 'FieldNode', value: 'role' },
             operator: '==',
-            right: { kind: 'LiteralExpression', value: 'editor' },
+            right: { kind: 'LiteralNode', value: 'editor' },
           },
         },
         right: {
-          kind: 'ComparisonExpression',
-          left: { kind: 'FieldExpression', value: 'role' },
+          kind: 'ComparisonNode',
+          left: { kind: 'FieldNode', value: 'role' },
           operator: '==',
-          right: { kind: 'LiteralExpression', value: 'viewer' },
+          right: { kind: 'LiteralNode', value: 'viewer' },
         },
       });
     });
@@ -138,7 +138,7 @@ describe('FilterParser', () => {
 
   describe('comparison expressions', () => {
     it('should throw InvalidExpression when comparison operand is an empty object', () => {
-      const badExpression: ExpressionRaw = {
+      const badExpression: Expression = {
         dog: { equals: {} },
       };
       expect(() => FilterParser.parse(badExpression)).toThrow(
@@ -151,12 +151,12 @@ describe('FilterParser', () => {
         phoneNumbers: { equals: ['+56 30000000', '+51 70000000'] },
       };
       expect(FilterParser.parse(badExpression)).toMatchObject({
-        kind: 'ComparisonExpression',
+        kind: 'ComparisonNode',
         left: {
-          kind: 'FieldExpression',
+          kind: 'FieldNode',
         },
         right: {
-          kind: 'ArrayExpression',
+          kind: 'ArrayNode',
         },
       });
     });
@@ -166,12 +166,12 @@ describe('FilterParser', () => {
         genere: { equals: 'techno' },
       };
       expect(FilterParser.parse(badExpression)).toMatchObject({
-        kind: 'ComparisonExpression',
+        kind: 'ComparisonNode',
         left: {
-          kind: 'FieldExpression',
+          kind: 'FieldNode',
         },
         right: {
-          kind: 'LiteralExpression',
+          kind: 'LiteralNode',
         },
       });
     });
@@ -225,17 +225,17 @@ describe('FilterParser', () => {
     });
 
     it('should parse a comparison between two fields', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         startDate: { lte: '$endDate' },
       };
 
       const result = FilterParser.parse(expression);
 
       expect(result).toMatchObject({
-        kind: 'ComparisonExpression',
-        left: { kind: 'FieldExpression', value: 'startDate' },
+        kind: 'ComparisonNode',
+        left: { kind: 'FieldNode', value: 'startDate' },
         operator: '<=',
-        right: { kind: 'FieldExpression', value: 'endDate' },
+        right: { kind: 'FieldNode', value: 'endDate' },
       });
     });
 
@@ -251,7 +251,7 @@ describe('FilterParser', () => {
 
   describe('not expressions', () => {
     it('should throw InvalidExpression when not expression is an empty object', () => {
-      const badExpression: ExpressionRaw = {
+      const badExpression: Expression = {
         not: {},
       };
       expect(() => FilterParser.parse(badExpression)).toThrow(
@@ -314,19 +314,19 @@ describe('FilterParser', () => {
     });
 
     it('should parse a valid not expression wrapping a comparison', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         not: { status: { equals: 'inactive' } },
       };
 
       const result = FilterParser.parse(expression);
 
       expect(result).toMatchObject({
-        kind: 'NotExpression',
+        kind: 'NotNode',
         expression: {
-          kind: 'ComparisonExpression',
-          left: { kind: 'FieldExpression', value: 'status' },
+          kind: 'ComparisonNode',
+          left: { kind: 'FieldNode', value: 'status' },
           operator: '==',
-          right: { kind: 'LiteralExpression', value: 'inactive' },
+          right: { kind: 'LiteralNode', value: 'inactive' },
         },
       });
     });
@@ -391,46 +391,46 @@ describe('FilterParser', () => {
     });
 
     it('should parse a valid in expression with a field and literal list', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         cat: { in: ['dog', 'cat'] },
       };
 
       const resultParse = FilterParser.parse(expression);
       expect(resultParse).toMatchObject({
-        kind: 'InExpression',
+        kind: 'InNode',
         value: {
-          kind: 'FieldExpression',
+          kind: 'FieldNode',
           value: 'cat',
         },
       });
     });
 
     it('should parse a valid in expression containing nested array and field expressions', () => {
-      const expression: ExpressionRaw<{}> = {
+      const expression: Expression<{}> = {
         cat: { in: ['dog', '$animal', ['$dog', ['duck']]] },
       };
 
       const resultParse = FilterParser.parse(expression);
       expect(resultParse).toMatchObject({
-        kind: 'InExpression',
+        kind: 'InNode',
         value: {
-          kind: 'FieldExpression',
+          kind: 'FieldNode',
           value: 'cat',
         },
         arrayExpression: {
-          kind: 'ArrayExpression',
+          kind: 'ArrayNode',
           items: [
-            { kind: 'LiteralExpression', value: 'dog' },
-            { kind: 'FieldExpression', value: 'animal' },
+            { kind: 'LiteralNode', value: 'dog' },
+            { kind: 'FieldNode', value: 'animal' },
             {
-              kind: 'ArrayExpression',
+              kind: 'ArrayNode',
               items: [
-                { kind: 'FieldExpression', value: 'dog' },
+                { kind: 'FieldNode', value: 'dog' },
                 {
-                  kind: 'ArrayExpression',
+                  kind: 'ArrayNode',
                   items: [
                     {
-                      kind: 'LiteralExpression',
+                      kind: 'LiteralNode',
                       value: 'duck',
                     },
                   ],
@@ -445,44 +445,44 @@ describe('FilterParser', () => {
 
   describe('field identifier expressions', () => {
     it('should parse a field identifier as the target of an in operator', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         cat: { in: ['dog', 'cat'] },
       };
 
       const resultParse = FilterParser.parse(expression);
       expect(resultParse).toMatchObject({
-        kind: 'InExpression',
+        kind: 'InNode',
         value: {
-          kind: 'FieldExpression',
+          kind: 'FieldNode',
           value: 'cat',
         },
       });
     });
 
     it('should parse a valid field reference matching identifier regex', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         t3s_t: { equals: '$_sd_a_3_4' },
       };
       const resultParse = FilterParser.parse(expression);
 
       expect(resultParse).toMatchObject({
-        kind: 'ComparisonExpression',
+        kind: 'ComparisonNode',
       });
     });
 
     it('should parse a valid field name matching identifier regex', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         _3st: { equals: 'clean_code' },
       };
       const resultParse = FilterParser.parse(expression);
 
       expect(resultParse).toMatchObject({
-        kind: 'ComparisonExpression',
+        kind: 'ComparisonNode',
       });
     });
 
     it('should throw InvalidExpression when field reference is only a dollar sign', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         indira_: { equals: '$' },
       };
 
@@ -490,7 +490,7 @@ describe('FilterParser', () => {
     });
 
     it('should throw InvalidExpression when field starts with dollar sign', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         '$%4f_': { equals: 'wtf' },
       };
 
@@ -498,7 +498,7 @@ describe('FilterParser', () => {
     });
 
     it('should throw InvalidExpression when field starts with percentage sign', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         '%4f_e_t': { gt: 3.14159 },
       };
 
@@ -506,7 +506,7 @@ describe('FilterParser', () => {
     });
 
     it('should throw InvalidExpression when field starts with a number', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         '34_test': { gt: 0.57721 },
       };
 
@@ -514,7 +514,7 @@ describe('FilterParser', () => {
     });
 
     it('should throw InvalidExpression when field starts with @', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         '@_l': { in: [0.57721, 3.14159] },
       };
 
@@ -522,7 +522,7 @@ describe('FilterParser', () => {
     });
 
     it('should throw InvalidExpression when field contains "" or spaces', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         '"="" OR "': { equals: 'SQLi' },
       };
 
@@ -530,7 +530,7 @@ describe('FilterParser', () => {
     });
 
     it('should throw InvalidExpression when field reference contains invalid characters', () => {
-      const expression: ExpressionRaw = {
+      const expression: Expression = {
         paganotto: { equals: '$s&?da34' },
       };
 
