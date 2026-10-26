@@ -28,7 +28,7 @@ export interface FieldNode {
 
 export interface ArrayNode {
   kind: 'ArrayNode';
-  items: (LiteralNode | FieldNode | ArrayNode)[];
+  items: readonly (LiteralNode | FieldNode | ArrayNode)[];
 }
 
 export interface InNode {

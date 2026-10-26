@@ -23,7 +23,7 @@ export class Criteria<T = unknown> {
   private orderBy_: OrderBy;
 
   private constructor(
-    readonly filterExpression: ExpressionNode | null,
+    private filterExpression_: ExpressionNode | null,
     private pagination_: Pagination | null,
     orderBy: OrderByRaw<T>,
     private limit_: number | null,
@@ -31,6 +31,7 @@ export class Criteria<T = unknown> {
     this.validateLimit(limit_);
     this.validatePaginationIntegrity(pagination_, limit_);
     this.orderBy_ = this.validateOrderBy(orderBy);
+    Object.freeze(this);
   }
 
   static build<T>(criteriaOptions: CriteriaOptions<T> = {}) {
@@ -38,12 +39,14 @@ export class Criteria<T = unknown> {
 
     const filterExpression = filter ? FilterParser.parse(filter) : null;
 
-    return new Criteria<T>(
+    const criteria = new Criteria<T>(
       filterExpression,
       pagination ?? null,
       orderBy ?? [],
       limit ?? null,
     );
+
+    return criteria;
   }
 
   private validateOrderBy(orderBy: OrderByRaw<T>): OrderBy {
@@ -106,39 +109,28 @@ export class Criteria<T = unknown> {
     }
   }
 
-  set limit(limit: number | null) {
-    this.validateLimit(limit);
-    this.validatePaginationIntegrity(this.pagination_, limit);
-    this.limit_ = limit;
+  get orderBy() {
+    return Object.freeze(Array.from(this.orderBy_.entries()));
   }
 
-  get limit() {
+  get limit(): Readonly<number | null> {
     return this.limit_;
   }
 
-  set orderBy(orderBy: OrderByRaw<T>) {
-    this.orderBy_ = this.validateOrderBy(orderBy);
+  get pagination(): Readonly<Pagination | null> {
+    return Object.freeze(this.pagination_);
   }
 
-  get orderBy(): [string, Sort][] {
-    return Array.from(this.orderBy_.entries());
-  }
-
-  set pagination(pagination: Pagination | null) {
-    this.validatePaginationIntegrity(pagination, this.limit_);
-    this.pagination_ = pagination;
-  }
-
-  get pagination(): Pagination | null {
-    return this.pagination_;
+  get filterExpression(): Readonly<ExpressionNode | null> {
+    return Object.freeze(this.filterExpression_);
   }
 
   toObjectPlain() {
-    return {
+    return Object.freeze({
       filterExpression: this.filterExpression,
-      pagination: this.pagination?.toObjectPlain() ?? null,
+      pagination: this.pagination_?.toObjectPlain() ?? null,
       orderBy: this.orderBy,
       limit: this.limit,
-    };
+    });
   }
 }
