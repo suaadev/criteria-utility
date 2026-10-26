@@ -21,29 +21,29 @@ describe('Criteria', () => {
     expect(criteria).toBeInstanceOf(Criteria);
     expect(criteriPlainObject).toStrictEqual({
       filterExpression: {
-        kind: 'LogicExpression',
+        kind: 'LogicalNode',
         left: {
-          kind: 'ComparisonExpression',
+          kind: 'ComparisonNode',
           left: {
-            kind: 'FieldExpression',
+            kind: 'FieldNode',
             value: 'username',
           },
           operator: '==',
           right: {
-            kind: 'LiteralExpression',
+            kind: 'LiteralNode',
             value: 'suanfansoon',
           },
         },
         operator: '&&',
         right: {
-          kind: 'ComparisonExpression',
+          kind: 'ComparisonNode',
           left: {
-            kind: 'FieldExpression',
+            kind: 'FieldNode',
             value: 'age',
           },
           operator: '>',
           right: {
-            kind: 'LiteralExpression',
+            kind: 'LiteralNode',
             value: 25,
           },
         },
@@ -66,14 +66,14 @@ describe('Criteria', () => {
     expect(criteria).toBeInstanceOf(Criteria);
     expect(criteriPlainObject).toStrictEqual({
       filterExpression: {
-        kind: 'ComparisonExpression',
+        kind: 'ComparisonNode',
         left: {
-          kind: 'FieldExpression',
+          kind: 'FieldNode',
           value: 'mood',
         },
         operator: '==',
         right: {
-          kind: 'LiteralExpression',
+          kind: 'LiteralNode',
           value: 'push it to the limit !!',
         },
       },
