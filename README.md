@@ -10,7 +10,7 @@
 ## Instalacion
 
 ```bash
-npm install https://github.com/sudavz/criteria/releases/download/v0.1.0-alpha.4/sudavz-criteria-0.1.0-alpha.4.tgz
+npm i --allow-remote=root https://github.com/sudavz/criteria/releases/download/v0.1.0-alpha.4/sudavz-criteria-0.1.0-alpha.4.tgz
 ```
 
 ## Inicio rapido
