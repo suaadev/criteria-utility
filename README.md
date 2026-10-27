@@ -1,50 +1,22 @@
-# Criteria Utility
+# Criteria
 
 <p align="left">
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
 </p>
 
-`Criteria-utility` es una librería que implementa el patrón de diseño `Criteria`, el cual nos provee la capacidad de especificar y transportar criterios de búsqueda. Uno de los usos de esta librería es gestionar la comunicación con los repositorios. Actualmente, cuando implementamos repositorios lo hacemos exponiendo métodos con un propósito específico como `find`, `save`, `findOne`, `update`, etc. Estos métodos reflejan una acción que queremos realizar, pero muchas veces también necesitamos especificar un criterio para cumplir dicha acción:
+`Criteria` es una librería que implementa el patrón de diseño `Criteria`, lista para especificar y transportar criterios de búsqueda. Uno de los usos de esta librería es gestionar la comunicación con los repositorios. Actualmente, cuando implementamos repositorios lo hacemos exponiendo métodos con un propósito específico como `find`, `save`, `findOne`, `update`, etc. Estos métodos reflejan una acción que queremos realizar, pero muchas veces también necesitamos especificar un criterio para cumplir dicha acción.
 
-```typescript
-interface UserRepository {
-  save(user: User): Promise<void>;
-  delete(user: User): Promise<void>;
-  findOne(criteria: Criteria<User>): Promise<User | null>;
-  findAll(criteria?: Criteria<User>): Promise<User[]>;
-}
+## Instalacion
 
-class UserPostgresRepository implements UserRepository {
-  async save(user: User): Promise<void> {
-    // some code here...
-  }
-
-  async delete(user: User): Promise<void> {
-    // some code here...
-  }
-
-  async findOne(criteria: Criteria<User>): Promise<User | null> {
-    // some code here...
-    return null;
-  }
-
-  async findAll(criteria?: Criteria<User>): Promise<User[]> {
-    // some code here...
-    return [];
-  }
-}
+```bash
+npm install https://github.com/sudavz/criteria/releases/download/v0.1.0-alpha.4/sudavz-criteria-0.1.0-alpha.4.tgz
 ```
 
-Como se observa en el ejemplo, los métodos `findAll` y `findOne` reciben un objeto de tipo `Criteria`, el cual contendrá las reglas y criterios con los que queramos obtener usuarios. Esto, por otro lado, también nos ayuda a evitar extender el repositorio con métodos específicos como `findByIdAndUsername` dejando un repositorio mucho más limpio y fácil de mantener.
-
-## Uso
-
-Para empezar a usar la librería, debes importar la clase `Criteria` como en el siguiente ejemplo:
+## Inicio rapido
 
 ```typescript
-import { Criteria } from 'criteria-utility';
+import { Criteria } from '@sudavz/criteria';
 
 const criteria = Criteria.build({
   filter: {
@@ -62,9 +34,9 @@ const criteria = Criteria.build({
 const user: User | null = await userRepository.findOne(criteria);
 ```
 
-### Expresiones
+## Uso
 
-Armar criterios de búsqueda es muy intuitivo. Si ya has trabajado con [MongoDB](https://github.com/mongodb/mongo) te va ser muy facil debido a su similitud en sintaxis.
+### Filtros
 
 #### Operaciones
 
@@ -97,7 +69,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 ```typescript
 {
   email: {
-    equals: 'wtf@example.com'
+    equals: 'wtf@example.com';
   }
 }
 ```
@@ -105,7 +77,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 ```typescript
 {
   age: {
-    gte: 18
+    gte: 18;
   }
 }
 ```
@@ -129,7 +101,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 
 ```typescript
 {
-  and: [{ age: { gte: 18 } }, { age: { lte: 60 } }]
+  and: [{ age: { gte: 18 } }, { age: { lte: 60 } }];
 }
 ```
 
@@ -138,7 +110,7 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
   or: [
     { username: { equals: 'torlvals' } },
     { username: { equals: 'robCMartin' } },
-  ]
+  ];
 }
 ```
 
@@ -168,7 +140,7 @@ También puedes decidir cómo quieres paginar tus resultados aplicando estrategi
 #### Usando número de página
 
 ```typescript
-import { Criteria, Pagination } from 'criteria-utility';
+import { Criteria, Pagination } from '@sudavz/criteria';
 
 const criteria = Criteria.build({
   filter: {
@@ -195,7 +167,7 @@ const users = await userRepository.findAll(criteria);
 Al emplear un cursor como estrategia, internamente `Pagination` hace uso del tipo `CursorPayload` que toma como representación una lista de criterios con valores y orden que debe emplear la paginación.
 
 ```typescript
-import { type CursorPayload } from 'criteria-utility';
+import { type CursorPayload } from '@sudavz/criteria';
 
 const cursorPayload: CursorPayload = [
   ['createdAt', '1989-02-25 11:56:26.472 -0500', 'DESC'],
@@ -207,7 +179,7 @@ const cursorPayload: CursorPayload = [
 Al momento de especificar un cursor, `Criteria` asume que el cursor viene serializado e internamente utilizará un [serializador](#serializadores) por defecto para decodificar el cursor a su forma canónica de `CursorPayload`.
 
 ```typescript
-import { Criteria, Pagination } from 'criteria-utility';
+import { Criteria, Pagination } from '@sudavz/criteria';
 
 const cursor: string = '...'; // Cursor serializado
 
@@ -232,7 +204,7 @@ const users = await userRepository.findAll(criteria);
 Cuando queremos exponer un cursor a un cliente, vamos a requerir de un `serializador` para que dicho cursor pueda ser transportado en un formato que pueda ser aceptado, como lo puede ser una cadena de texto en base 64.
 
 ```typescript
-import { CursorBase64Serializer, type CursorPayload } from 'criteria-utility';
+import { CursorBase64Serializer, type CursorPayload } from '@sudavz/criteria';
 
 const cursorPayload: CursorPayload = [
   ['createdAt', '2026-09-24 11:56:26.472 -0500', 'DESC'],
@@ -249,58 +221,6 @@ const decodeCursor: CursorPayload = cursorBase64Serializer.decode(encodeCursor);
 
 > [!TIP]
 > Puedes implementar la interfaz `CursorSerializer<K,T>` para crear tus propios serializadores.
-
-## Generadores
-
-La utilidad `Criteria` actúa como un objeto que encapsula la lógica para filtrar resultados, sea de un repositorio o un almacén de datos custom, pero dicha lógica tiene que ser interpretada por la implementación que estés empleando. Aquí es donde entran los generadores: estos nos ayudan a traducir un `Criteria` a la implementación que estés usando.
-
-Un ejemplo podría ser que tienes un repositorio que se comunica con una base de datos [Postgres](https://www.postgresql.org/) y lo haces mediante la librería nativa [pg](https://github.com/brianc/node-postgres). Cuando recibimos el objeto `Criteria`, tenemos que generar el [SQL](https://en.wikipedia.org/wiki/SQL) correspondiente a la lógica encapsulada en `Criteria`. Para esto, la librería ya cuenta con `PostgresSqlGenerator`, que nos genera el `sql` a partir de un objeto `Criteria`.
-
-```typescript
-import { Criteria, Pagination, PostgresSqlGenerator } from 'criteria-utility';
-
-type Book = {
-  id: number;
-  name: string;
-  author: string;
-  rate: number;
-  publicationDate: Date;
-};
-
-const criteria = Criteria.build<Book>({
-  filter: {
-    and: [{ rate: { gte: 4 } }, { publicationDate: { gte: '2008-01-08' } }],
-  },
-  pagination: Pagination.byPage(22),
-  orderBy: [
-    ['publicationDate', 'DESC'],
-    ['name', 'ASC'],
-  ],
-  limit: 15,
-});
-
-const sql = PostgresSqlGenerator.fromCriteria(criteria, 'bk');
-
-console.log(sql);
-```
-
-El resultado sería:
-
-```typescript
-{
-  fullSql: 'WHERE ((bk."rate" >= $1) AND (bk."publicationDate" >= $2)) ORDER BY bk."publicationDate" DESC, bk."name" ASC OFFSET 315 LIMIT 15',
-  sql: {
-    where: '((bk."rate" >= $1) AND (bk."publicationDate" >= $2))',
-    orderBy: 'bk."publicationDate" DESC, bk."name" ASC',
-    offset: 315,
-    limit: 15
-  },
-  values: [ 4, '2008-01-08' ]
-}
-```
-
-> [!IMPORTANT]
-> Cuando usas un cursor, este ya sabe exactamente cómo ordenar y paginar los siguientes resultados. Por eso, si defines un `orderBy` manual al mismo tiempo que pasas un cursor, el generador priorizará el cursor para evitar que la paginación se rompa o devuelva resultados inesperados.
 
 ## Desarrollo
 
