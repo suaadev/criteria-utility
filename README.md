@@ -5,18 +5,18 @@
   <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
 </p>
 
-`Criteria` es una librería que implementa el patrón de diseño `Criteria`, lista para especificar y transportar criterios de búsqueda. Uno de los usos de esta librería es gestionar la comunicación con los repositorios. Actualmente, cuando implementamos repositorios lo hacemos exponiendo métodos con un propósito específico como `find`, `save`, `findOne`, `update`, etc. Estos métodos reflejan una acción que queremos realizar, pero muchas veces también necesitamos especificar un criterio para cumplir dicha acción.
+`Criteria` is a TypeScript library that implements the Criteria pattern to specify and transport search and filtering criteria. A key use case is managing repository communication. When implementing repositories, we often expose specific methods such as `find`, `save`, `findOne`, `update`, etc. These methods represent the action to perform, but we frequently need to specify query criteria to fulfill that action.
 
-## Instalacion
+## Installation
 
 ```bash
-npm install github:sudavz/criteria#main
+npm install @criteria-ts/core
 ```
 
-## Inicio rapido
+## Quick Start
 
 ```typescript
-import { Criteria } from '@sudavz/criteria';
+import { Criteria } from '@criteria-ts/core';
 
 const criteria = Criteria.build({
   filter: {
@@ -34,17 +34,17 @@ const criteria = Criteria.build({
 const user: User | null = await userRepository.findOne(criteria);
 ```
 
-## Uso
+## Usage
 
-### Filtros
+### Filters
 
-#### Operaciones
+#### Operations
 
-Las operaciones son acciones que puedes realizar con un campo o cierto valor, como comparar si un valor es igual a otro, si 2 condiciones se cumplen o verificar si un elemento se encuentra en una lista.
+Operations are actions performed on a field or value, such as comparing values for equality, evaluating logical conditions, or checking whether an item belongs to a list.
 
-#### Operadores de comparación
+#### Comparison Operators
 
-**Sintaxis básica:**
+**Basic syntax:**
 
 ```json
 {
@@ -53,18 +53,18 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 ```
 
 > [!NOTE]
-> Para hacer referencia a un campo como valor se usa $ al inicio del string ej: "$username"
+> To reference another field as a value, prefix the string with `$`, e.g., `"$username"`
 
-| Operador |                   Descripción                   |
-| :------: | :---------------------------------------------: |
-|  equals  |      Compara que un valor sea igual a otro      |
-|   diff   |    Compara que un valor sea diferente a otro    |
-|   gte    | Compara que un valor sea mayor o igual que otro |
-|    gt    |     Compara que un valor sea mayor que otro     |
-|   lte    | Compara que un valor sea menor o igual que otro |
-|    lt    |     Compara que un valor sea menor que otro     |
+| Operator |                       Description                        |
+| :------: | :------------------------------------------------------: |
+|  equals  |            Checks that a value equals another            |
+|   diff   |     Checks that a value is not equal to another  |
+|   gte    | Checks that a value is greater than or equal to another  |
+|    gt    |        Checks that a value is greater than another       |
+|   lte    |   Checks that a value is less than or equal to another   |
+|    lt    |          Checks that a value is less than another        |
 
-**Ejemplos:**
+**Examples:**
 
 ```typescript
 {
@@ -82,9 +82,9 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 }
 ```
 
-#### Operadores lógicos
+#### Logical Operators
 
-**Sintaxis básica:**
+**Basic syntax:**
 
 ```json
 {
@@ -92,12 +92,12 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 }
 ```
 
-| Operador |                    Descripción                     |
+| Operator |                    Description                     |
 | :------: | :------------------------------------------------: |
-|   and    |  Evalúa que todas las condiciones sean verdaderas  |
-|    or    | Evalúa que alguna de las condiciones sea verdadera |
+|   and    |       Evaluates that all conditions are true       |
+|    or    |   Evaluates that at least one condition is true    |
 
-**Ejemplos:**
+**Examples:**
 
 ```typescript
 {
@@ -114,14 +114,14 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 }
 ```
 
-#### Otros
+#### Other Operators
 
-| Operador |                       Descripción                       |
-| :------: | :-----------------------------------------------------: |
-|   not    |                   Niega una expresión                   |
-|    in    | Evalúa si un valor se encuentra en una lista de valores |
+| Operator |                       Description                        |
+| :------: | :------------------------------------------------------: |
+|   not    |                  Negates an expression                   |
+|    in    |  Checks if a value is contained within a list of values  |
 
-**Ejemplos:**
+**Examples:**
 
 ```typescript
 {
@@ -133,14 +133,14 @@ Las operaciones son acciones que puedes realizar con un campo o cierto valor, co
 }
 ```
 
-### Paginación
+### Pagination
 
-También puedes decidir cómo quieres paginar tus resultados aplicando estrategias de navegación entre páginas usando número de página o cursor. Debes instanciar un objeto de tipo `Pagination` mediante el uso de sus métodos estáticos `byPage` o `byCursor` dependiendo de tu estrategia a usar, por ejemplo:
+You can configure result pagination using either page-number or cursor-based strategies. Instantiate a `Pagination` object using the static factory methods `Pagination.byPage` or `Pagination.byCursor` depending on your strategy:
 
-#### Usando número de página
+#### Using Page Number
 
 ```typescript
-import { Criteria, Pagination } from '@sudavz/criteria';
+import { Criteria, Pagination } from '@criteria-ts/core';
 
 const criteria = Criteria.build({
   filter: {
@@ -160,14 +160,14 @@ const users = await userRepository.findAll(criteria);
 ```
 
 > [!CAUTION]
-> Si se especifica una paginación sin un `limit`, `Criteria` lanzará una excepción indicando que la paginación requiere obligatoriamente un tamaño de página (`limit`) para operar: en la paginación por página es necesario para calcular el desplazamiento (`OFFSET = (page - 1) * limit`), y en la paginación por cursor delimita el tamaño del lote a recuperar.
+> If pagination is specified without a `limit`, `Criteria` throws an exception. Pagination strictly requires a page size (`limit`) to operate: page-based pagination uses it to calculate the offset (`OFFSET = (page - 1) * limit`), and cursor-based pagination uses it to bound the batch size.
 
-#### Usando cursor
+#### Using Cursor
 
-Al emplear un cursor como estrategia, internamente `Pagination` hace uso del tipo `CursorPayload` que toma como representación una lista de criterios con valores y orden que debe emplear la paginación.
+When using cursor-based pagination, `Pagination` relies on the `CursorPayload` type, which represents a list of field criteria with values and sort orders.
 
 ```typescript
-import { type CursorPayload } from '@sudavz/criteria';
+import { type CursorPayload } from '@criteria-ts/core';
 
 const cursorPayload: CursorPayload = [
   ['createdAt', '1989-02-25 11:56:26.472 -0500', 'DESC'],
@@ -176,12 +176,12 @@ const cursorPayload: CursorPayload = [
 ];
 ```
 
-Al momento de especificar un cursor, `Criteria` asume que el cursor viene serializado e internamente utilizará un [serializador](#serializadores) por defecto para decodificar el cursor a su forma canónica de `CursorPayload`.
+When specifying a cursor, `Criteria` assumes the cursor is serialized and uses a default [serializer](#serializers) to decode it into its canonical `CursorPayload` representation.
 
 ```typescript
-import { Criteria, Pagination } from '@sudavz/criteria';
+import { Criteria, Pagination } from '@criteria-ts/core';
 
-const cursor: string = '...'; // Cursor serializado
+const cursor: string = '...'; // Serialized cursor
 
 const criteria = Criteria.build({
   filter: {
@@ -197,14 +197,14 @@ const users = await userRepository.findAll(criteria);
 ```
 
 > [!NOTE]
-> `Pagination` emplea internamente `CursorBase64Serializer` por defecto, pero puedes usar una implementación en concreto pasándolo como segundo parámetro a `Pagination.byCursor`.
+> `Pagination` internally uses `CursorBase64Serializer` by default, but you can pass a custom implementation as the second argument to `Pagination.byCursor`.
 
-#### Serializadores
+#### Serializers
 
-Cuando queremos exponer un cursor a un cliente, vamos a requerir de un `serializador` para que dicho cursor pueda ser transportado en un formato que pueda ser aceptado, como lo puede ser una cadena de texto en base 64.
+When exposing a cursor to a client, a serializer is needed to transport the cursor in an accepted format, such as a base64 encoded string.
 
 ```typescript
-import { CursorBase64Serializer, type CursorPayload } from '@sudavz/criteria';
+import { CursorBase64Serializer, type CursorPayload } from '@criteria-ts/core';
 
 const cursorPayload: CursorPayload = [
   ['createdAt', '2026-09-24 11:56:26.472 -0500', 'DESC'],
@@ -220,12 +220,12 @@ const decodeCursor: CursorPayload = cursorBase64Serializer.decode(encodeCursor);
 ```
 
 > [!TIP]
-> Puedes implementar la interfaz `CursorSerializer<K,T>` para crear tus propios serializadores.
+> You can implement the `CursorSerializer<K, T>` interface to create custom serializers.
 
-## Desarrollo
+## Development
 
-Esta librería está actualmente en desarrollo activo. Puede que encuentres algún error o detalles por pulir en el camino, ya que es un proyecto de código abierto pensado para ayudar a otros desarrolladores a implementar el patrón de diseño `Criteria` de forma rápida y sencilla :).
+This library is currently under active development. If you encounter any bugs or areas for improvement, feel free to report them.
 
-## Contribución
+## Contributing
 
-Toda ayuda es más que bienvenida. Si tienes ideas para mejorar la librería, encuentras algún fallo o quieres sumar una nueva funcionalidad, siéntete libre de abrir un issue o enviar un Pull Request.
+Contributions are welcome. If you have ideas for improvements, find a bug, or want to add new functionality, feel free to open an issue or submit a Pull Request.
