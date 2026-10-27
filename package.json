@@ -1,11 +1,12 @@
 {
-  "name": "criteria-utility",
+  "name": "@sudavz/criteria",
   "version": "0.1.0-alpha.3",
-  "description": "",
+  "description": "A TypeScript library for building decoupled search and filtering criteria using the Criteria pattern.",
   "license": "MIT",
-  "author": "David Suarez",
+  "author": "David Suarez sudavz@proton.me",
   "type": "module",
   "main": "./lib/index.js",
+  "private": "false",
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -17,6 +18,9 @@
   "types": "./lib/index.d.ts",
   "exports": {
     ".": "./lib/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "lib",
