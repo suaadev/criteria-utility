@@ -1,6 +1,6 @@
 {
   "name": "@sudavz/criteria",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "description": "A TypeScript library for building decoupled search and filtering criteria using the Criteria pattern.",
   "license": "MIT",
   "author": "David Suarez sudavz@proton.me",
