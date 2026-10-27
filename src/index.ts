@@ -13,7 +13,6 @@ import InvalidLimit from './exceptions/invalid-limit.js';
 import InvalidOrderBy from './exceptions/invalid-orderby.js';
 import InvalidPage from './exceptions/invalid-page.js';
 import InvalidPagination from './exceptions/invalid-pagination.js';
-import * as PostgresSqlGenerator from './generators/postgres-sql.generator.js';
 import type {
   CursorCriterion,
   CursorPayload,
@@ -34,7 +33,6 @@ export {
   InvalidPage,
   InvalidPagination,
   Pagination,
-  PostgresSqlGenerator,
   Ast,
   Grammar,
   type CriteriaOptions,
