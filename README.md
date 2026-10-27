@@ -10,7 +10,7 @@
 ## Instalacion
 
 ```bash
-npm install https://github.com/sudavz/criteria/releases/download/v0.1.0-alpha.4/sudavz-criteria-0.1.0-alpha.4.tgz
+npm install github:sudavz/criteria#main
 ```
 
 ## Inicio rapido
