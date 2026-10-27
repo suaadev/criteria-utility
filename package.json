@@ -6,13 +6,14 @@
   "author": "David Suarez sudavz@proton.me",
   "type": "module",
   "main": "./lib/index.js",
-  "private": "false",
+  "private": false,
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write --config .prettierrc .",
-    "prepare": "husky",
+    "prepare:develop": "husky",
+    "prepare": "tsc",
     "lint": "eslint ."
   },
   "types": "./lib/index.d.ts",
