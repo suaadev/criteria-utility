@@ -1,9 +1,8 @@
 # Criteria
 
-<p align="left">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-</p>
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
 
 `Criteria` is a TypeScript library that implements the Criteria pattern to specify and transport search and filtering criteria. A key use case is managing repository communication. When implementing repositories, we often expose specific methods such as `find`, `save`, `findOne`, `update`, etc. These methods represent the action to perform, but we frequently need to specify query criteria to fulfill that action.
 
@@ -18,7 +17,7 @@ npm install @criteria-ts/core
 ```typescript
 import { Criteria } from '@criteria-ts/core';
 
-const criteria = Criteria.build({
+const criteria = Criteria.create({
   filter: {
     or: [
       {
@@ -52,17 +51,16 @@ Operations are actions performed on a field or value, such as comparing values f
 }
 ```
 
-> [!NOTE]
-> To reference another field as a value, prefix the string with `$`, e.g., `"$username"`
+> **Note:** To reference another field as a value, prefix the string with `$`, e.g., `"$username"`
 
-| Operator |                       Description                        |
-| :------: | :------------------------------------------------------: |
-|  equals  |            Checks that a value equals another            |
-|   diff   |     Checks that a value is not equal to another  |
-|   gte    | Checks that a value is greater than or equal to another  |
-|    gt    |        Checks that a value is greater than another       |
-|   lte    |   Checks that a value is less than or equal to another   |
-|    lt    |          Checks that a value is less than another        |
+| Operator |                       Description                       |
+| :------: | :-----------------------------------------------------: |
+|  equals  |           Checks that a value equals another            |
+|   diff   |       Checks that a value is not equal to another       |
+|   gte    | Checks that a value is greater than or equal to another |
+|    gt    |       Checks that a value is greater than another       |
+|   lte    |  Checks that a value is less than or equal to another   |
+|    lt    |        Checks that a value is less than another         |
 
 **Examples:**
 
@@ -92,10 +90,10 @@ Operations are actions performed on a field or value, such as comparing values f
 }
 ```
 
-| Operator |                    Description                     |
-| :------: | :------------------------------------------------: |
-|   and    |       Evaluates that all conditions are true       |
-|    or    |   Evaluates that at least one condition is true    |
+| Operator |                  Description                  |
+| :------: | :-------------------------------------------: |
+|   and    |    Evaluates that all conditions are true     |
+|    or    | Evaluates that at least one condition is true |
 
 **Examples:**
 
@@ -116,10 +114,10 @@ Operations are actions performed on a field or value, such as comparing values f
 
 #### Other Operators
 
-| Operator |                       Description                        |
-| :------: | :------------------------------------------------------: |
-|   not    |                  Negates an expression                   |
-|    in    |  Checks if a value is contained within a list of values  |
+| Operator |                      Description                       |
+| :------: | :----------------------------------------------------: |
+|   not    |                 Negates an expression                  |
+|    in    | Checks if a value is contained within a list of values |
 
 **Examples:**
 
@@ -142,7 +140,7 @@ You can configure result pagination using either page-number or cursor-based str
 ```typescript
 import { Criteria, Pagination } from '@criteria-ts/core';
 
-const criteria = Criteria.build({
+const criteria = Criteria.create({
   filter: {
     age: {
       gte: 18,
@@ -159,8 +157,7 @@ const criteria = Criteria.build({
 const users = await userRepository.findAll(criteria);
 ```
 
-> [!CAUTION]
-> If pagination is specified without a `limit`, `Criteria` throws an exception. Pagination strictly requires a page size (`limit`) to operate: page-based pagination uses it to calculate the offset (`OFFSET = (page - 1) * limit`), and cursor-based pagination uses it to bound the batch size.
+> **Note:** If pagination is specified without a `limit`, `Criteria` throws an exception. Pagination strictly requires a page size (`limit`) to operate: page-based pagination uses it to calculate the offset (`OFFSET = (page - 1) * limit`), and cursor-based pagination uses it to bound the batch size.
 
 #### Using Cursor
 
@@ -183,7 +180,7 @@ import { Criteria, Pagination } from '@criteria-ts/core';
 
 const cursor: string = '...'; // Serialized cursor
 
-const criteria = Criteria.build({
+const criteria = Criteria.create({
   filter: {
     age: {
       gte: 18,
@@ -196,8 +193,7 @@ const criteria = Criteria.build({
 const users = await userRepository.findAll(criteria);
 ```
 
-> [!NOTE]
-> `Pagination` internally uses `CursorBase64Serializer` by default, but you can pass a custom implementation as the second argument to `Pagination.byCursor`.
+> **Note:** `Pagination` internally uses `CursorBase64Serializer` by default, but you can pass a custom implementation as the second argument to `Pagination.byCursor`.
 
 #### Serializers
 
@@ -219,8 +215,7 @@ const encodeCursor: string = cursorBase64Serializer.encode(cursorPayload);
 const decodeCursor: CursorPayload = cursorBase64Serializer.decode(encodeCursor);
 ```
 
-> [!TIP]
-> You can implement the `CursorSerializer<K, T>` interface to create custom serializers.
+> **Note:** You can implement the `CursorSerializer<K, T>` interface to create custom serializers.
 
 ## Development
 
