@@ -7,6 +7,11 @@
   "type": "module",
   "main": "./lib/index.js",
   "private": false,
+  "homepage": "https://github.com/sudavz/criteria",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sudavz/criteria.git"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
