@@ -34,6 +34,15 @@ export class Criteria<T = Record<string, unknown>> {
     Object.freeze(this);
   }
 
+  /**
+   * @deprecated use Criteria.create instead
+   */
+  static build<T = Record<string, unknown>>(
+    criteriaOptions: CriteriaOptions<NoInfer<T>> = {},
+  ) {
+    return Criteria.create<T>(criteriaOptions);
+  }
+
   static create<T = Record<string, unknown>>(
     criteriaOptions: CriteriaOptions<NoInfer<T>> = {},
   ) {
