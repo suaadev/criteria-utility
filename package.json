@@ -12,6 +12,25 @@
     "type": "git",
     "url": "git+https://github.com/sudavz/criteria.git"
   },
+  "keywords": [
+    "criteria",
+    "criteria-pattern",
+    "specification-pattern",
+    "domain-driven-design",
+    "ddd",
+    "repository-pattern",
+    "clean-architecture",
+    "filtering",
+    "filter",
+    "query",
+    "query-filter",
+    "cursor-pagination",
+    "pagination",
+    "ast",
+    "visitor-pattern",
+    "type-safe",
+    "typescript"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
