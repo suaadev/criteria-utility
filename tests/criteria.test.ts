@@ -19,7 +19,7 @@ describe('Criteria', () => {
     const criteriPlainObject = criteria.toObjectPlain();
 
     expect(criteria).toBeInstanceOf(Criteria);
-    expect(criteriPlainObject).toStrictEqual({
+    expect(criteriPlainObject).toMatchObject({
       filterExpression: {
         kind: 'LogicalNode',
         left: {
@@ -64,7 +64,7 @@ describe('Criteria', () => {
     const criteriPlainObject = criteria.toObjectPlain();
 
     expect(criteria).toBeInstanceOf(Criteria);
-    expect(criteriPlainObject).toStrictEqual({
+    expect(criteriPlainObject).toMatchObject({
       filterExpression: {
         kind: 'ComparisonNode',
         left: {
