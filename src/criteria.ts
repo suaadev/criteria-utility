@@ -34,7 +34,7 @@ export class Criteria<T = Record<string, unknown>> {
     Object.freeze(this);
   }
 
-  static build<T = Record<string, unknown>>(
+  static create<T = Record<string, unknown>>(
     criteriaOptions: CriteriaOptions<NoInfer<T>> = {},
   ) {
     const { filter, limit, orderBy, pagination } = criteriaOptions;
