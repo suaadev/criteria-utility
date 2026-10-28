@@ -217,6 +217,71 @@ const decodeCursor: CursorPayload = cursorBase64Serializer.decode(encodeCursor);
 
 > **Note:** You can implement the `CursorSerializer<K, T>` interface to create custom serializers.
 
+## AST & Visitor Pattern
+
+Filter expressions are parsed into an Abstract Syntax Tree (AST) composed of strongly-typed nodes. Each node implements the double-dispatch `accept` method to support AST traversal, interpretation, and transformation into target query formats (such as SQL or query dialect generators).
+
+The `Visitor<T>` interface defines visit methods for each AST node:
+
+```typescript
+export interface Visitor<T = void> {
+  visitLiteralNode(literalNode: LiteralNode): T;
+  visitNotNode(notNode: NotNode): T;
+  visitComparisonNode(comparisonNode: ComparisonNode): T;
+  visitLogicalNode(logicalNode: LogicalNode): T;
+  visitArrayNode(arrayNode: ArrayNode): T;
+  visitInNode(inNode: InNode): T;
+  visitFieldNode(fieldNode: FieldNode): T;
+}
+```
+
+#### Example Usage
+
+```typescript
+import { Criteria, type Ast, type Visitor } from '@criteria-ts/core';
+
+class CustomVisitor implements Visitor<string> {
+  visitLiteralNode(node: Ast.LiteralNode): string {
+    return `${node.value}`;
+  }
+
+  visitFieldNode(node: Ast.FieldNode): string {
+    return node.value;
+  }
+
+  visitComparisonNode(node: Ast.ComparisonNode): string {
+    return `${node.left.accept(this)} ${node.operator} ${node.right.accept(this)}`;
+  }
+
+  visitLogicalNode(node: Ast.LogicalNode): string {
+    return `(${node.left.accept(this)} ${node.operator} ${node.right.accept(this)})`;
+  }
+
+  visitNotNode(node: Ast.NotNode): string {
+    return `NOT (${node.expression.accept(this)})`;
+  }
+
+  visitArrayNode(node: Ast.ArrayNode): string {
+    return `[${node.items.map((item) => item.accept(this)).join(', ')}]`;
+  }
+
+  visitInNode(node: Ast.InNode): string {
+    return `${node.value.accept(this)} IN ${node.arrayExpression.accept(this)}`;
+  }
+}
+
+const criteria = Criteria.create({
+  filter: {
+    mood: { equals: 'focused' },
+  },
+});
+
+const visitor = new CustomVisitor();
+const result = criteria.filterExpression?.accept(visitor);
+```
+
+> **Note:** All AST node interfaces (`LiteralNode`, `ComparisonNode`, `LogicalNode`, `NotNode`, `InNode`, `FieldNode`, `ArrayNode`) extend the base `Node` interface and are available under the `Ast` namespace.
+
 ## Development
 
 This library is currently under active development. If you encounter any bugs or areas for improvement, feel free to report them.
