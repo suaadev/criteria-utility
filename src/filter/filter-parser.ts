@@ -1,5 +1,14 @@
 import InvalidExpression from '../exceptions/invalid-expression.js';
 import * as ast from './ast.js';
+import {
+  buildArrayNode,
+  buildComparisonNode,
+  buildFieldNode,
+  buildInNode,
+  buildLiteralNode,
+  buildLogicalNode,
+  buildNotNode,
+} from './node-builders.js';
 import * as grammar from './grammar.js';
 
 const mapComparisonOperator: Record<
@@ -211,46 +220,4 @@ function validateFieldExpression(field: string) {
       field,
     );
   }
-}
-
-function buildLiteralNode(value: ast.LiteralValue): ast.LiteralNode {
-  return Object.freeze({ kind: 'LiteralNode', value });
-}
-
-function buildComparisonNode(
-  left: ast.ExpressionNode,
-  operator: ast.NodeComparisonOperator,
-  right: ast.ExpressionNode,
-): ast.ComparisonNode {
-  return Object.freeze({ kind: 'ComparisonNode', left, operator, right });
-}
-
-function buildLogicalNode(
-  left: ast.LogicalNode['left'],
-  operator: ast.NodeLogicalOperator,
-  right: ast.LogicalNode['right'],
-): ast.LogicalNode {
-  return Object.freeze({ kind: 'LogicalNode', left, operator, right });
-}
-
-function buildNotNode(expression: ast.NotNode['expression']): ast.NotNode {
-  return Object.freeze({ kind: 'NotNode', expression });
-}
-
-function buildArrayNode(items: ast.ArrayNode['items']): ast.ArrayNode {
-  return Object.freeze({
-    kind: 'ArrayNode',
-    items: Object.freeze(items),
-  });
-}
-
-function buildInNode(
-  value: ast.InNode['value'],
-  arrayExpression: ast.ArrayNode,
-): ast.InNode {
-  return Object.freeze({ kind: 'InNode', arrayExpression, value });
-}
-
-function buildFieldNode(value: string): ast.FieldNode {
-  return Object.freeze({ kind: 'FieldNode', value });
 }

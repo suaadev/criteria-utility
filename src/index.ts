@@ -13,19 +13,22 @@ import InvalidLimit from './exceptions/invalid-limit.js';
 import InvalidOrderBy from './exceptions/invalid-orderby.js';
 import InvalidPage from './exceptions/invalid-page.js';
 import InvalidPagination from './exceptions/invalid-pagination.js';
+import * as Ast from './filter/ast.js';
+import * as Grammar from './filter/grammar.js';
+import type { Visitor } from './filter/visitor.js';
 import type {
   CursorCriterion,
   CursorPayload,
   CursorSort,
 } from './pagination.js';
 import Pagination from './pagination.js';
-import * as Ast from './filter/ast.js';
-import * as Grammar from './filter/grammar.js';
 
 export {
+  Ast,
   Criteria,
   CriteriaError,
   CursorBase64Serializer,
+  Grammar,
   InvalidCursorPayload,
   InvalidExpression,
   InvalidLimit,
@@ -33,8 +36,6 @@ export {
   InvalidPage,
   InvalidPagination,
   Pagination,
-  Ast,
-  Grammar,
   type CriteriaOptions,
   type CursorCriterion,
   type CursorPayload,
@@ -42,4 +43,5 @@ export {
   type CursorSort,
   type OrderByRaw,
   type Sort,
+  type Visitor,
 };
