@@ -5,6 +5,7 @@ import {
   buildComparisonNode,
   buildFieldNode,
   buildInNode,
+  buildIsNullNode,
   buildLiteralNode,
   buildLogicalNode,
   buildNotNode,
@@ -114,7 +115,8 @@ export function parse<T extends Record<string, Grammar.ValidValueTypes>>(
         expression.kind !== 'ComparisonNode' &&
         expression.kind !== 'InNode' &&
         expression.kind !== 'NotNode' &&
-        expression.kind !== 'FieldNode'
+        expression.kind !== 'FieldNode' &&
+        expression.kind !== 'IsNullNode'
       ) {
         throw new InvalidExpression(
           'The LogicExpression requires valid expressions',
@@ -141,7 +143,8 @@ export function parse<T extends Record<string, Grammar.ValidValueTypes>>(
       expression.kind !== 'ComparisonNode' &&
       expression.kind !== 'LogicalNode' &&
       expression.kind !== 'NotNode' &&
-      expression.kind !== 'InNode'
+      expression.kind !== 'InNode' &&
+      expression.kind !== 'IsNullNode'
     ) {
       throw new InvalidExpression(
         `The NOT expression requires a valid expression`,
@@ -225,6 +228,22 @@ export function parse<T extends Record<string, Grammar.ValidValueTypes>>(
     }
 
     return buildInNode(buildFieldNode(key), arrayNode);
+  }
+
+  // IsNull expression
+  if (operator === 'isNull') {
+    const isNullValue = operation[operator];
+
+    if (typeof isNullValue !== 'boolean') {
+      throw new InvalidExpression(
+        'The IsNull expression must contain a boolean value',
+        input,
+      );
+    }
+
+    const field = buildFieldNode(key);
+
+    return buildIsNullNode(isNullValue, field);
   }
 
   throw new InvalidExpression('The input expression is invalid', input);

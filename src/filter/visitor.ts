@@ -3,6 +3,7 @@ import {
   ComparisonNode,
   FieldNode,
   InNode,
+  IsNullNode,
   LiteralNode,
   LogicalNode,
   NotNode,
@@ -16,4 +17,5 @@ export interface Visitor<T = void> {
   visitArrayNode(arrayNode: ArrayNode): T;
   visitInNode(inNode: InNode): T;
   visitFieldNode(fieldNode: FieldNode): T;
+  visitIsNullNode(isNullNode: IsNullNode): T;
 }

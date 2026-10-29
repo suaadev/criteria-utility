@@ -81,3 +81,16 @@ export function buildFieldNode(value: string): ast.FieldNode {
   };
   return Object.freeze(obj);
 }
+
+export function buildIsNullNode(
+  isNull: boolean,
+  value: ast.IsNullNode['value'],
+): ast.IsNullNode {
+  const obj: ast.IsNullNode = {
+    kind: 'IsNullNode',
+    isNull,
+    value,
+    accept: <T>(visitor: Visitor<T>) => visitor.visitIsNullNode(obj),
+  };
+  return Object.freeze(obj);
+}

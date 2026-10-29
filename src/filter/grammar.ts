@@ -41,15 +41,26 @@ export interface NotExpression<T> {
   not: OperationExpression<T>;
 }
 
-export type RightSideOperand<T> = Partial<InOperand & ComparisonOperand<T>>;
+export type RightSideOperand<T> = Partial<
+  InOperand & ComparisonOperand<T> & IsNullOperand
+>;
 
 export type OperationExpression<T> =
   | LogicalExpression<T>
   | ComparisonExpression<T>
   | InExpression<T>
-  | NotExpression<T>;
+  | NotExpression<T>
+  | IsNullExpression<T>;
 
 export type ValidValueTypes = LiteralExpression | ArrayExpression;
+
+export interface IsNullOperand {
+  isNull: boolean;
+}
+
+export type IsNullExpression<T> = Partial<{
+  [K in keyof T]: IsNullOperand;
+}>;
 
 export type Expression<
   T extends Record<string, ValidValueTypes> = Record<string, ValidValueTypes>,
