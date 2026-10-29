@@ -46,9 +46,9 @@ export interface InNode extends Node {
 
 export interface LogicalNode extends Node {
   kind: 'LogicalNode';
-  left: LogicalNode | ComparisonNode | InNode | NotNode | FieldNode;
+  left: ExpressionNode;
   operator: NodeLogicalOperator;
-  right: LogicalNode | ComparisonNode | InNode | NotNode | FieldNode;
+  right: ExpressionNode;
 }
 
 export type ExpressionNode =
