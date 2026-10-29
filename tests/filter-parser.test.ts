@@ -6,11 +6,9 @@ import { describe, expect, it } from 'vitest';
 describe('FilterParser', () => {
   describe('general expressions', () => {
     it('should parse valid logical and comparison expressions', () => {
-      const goodExpression: Expression = {
+      const parserResult = FilterParser.parse({
         and: [{ username: { diff: 'jazzz' } }, { age: { lte: '$parentAage' } }],
-      };
-
-      const parserResult = FilterParser.parse(goodExpression);
+      });
 
       expect(parserResult).toMatchObject({
         kind: 'LogicalNode',
@@ -38,12 +36,30 @@ describe('FilterParser', () => {
         InvalidExpression,
       );
     });
+  });
 
-    it('should parse null as a LiteralExpression', () => {
-      const badExpression = null as any;
-      expect(FilterParser.parse(badExpression)).toMatchObject({
+  describe('Literal expressions', () => {
+    it('should parse a valid LiteralExpression', () => {
+      expect(FilterParser.parse(null)).toMatchObject({
         kind: 'LiteralNode',
         value: null,
+      });
+      expect(FilterParser.parse(123)).toMatchObject({
+        kind: 'LiteralNode',
+        value: 123,
+      });
+
+      expect(FilterParser.parse(true)).toMatchObject({
+        kind: 'LiteralNode',
+        value: true,
+      });
+      expect(FilterParser.parse(false)).toMatchObject({
+        kind: 'LiteralNode',
+        value: false,
+      });
+      expect(FilterParser.parse("somebody's watching me")).toMatchObject({
+        kind: 'LiteralNode',
+        value: "somebody's watching me",
       });
     });
   });
@@ -138,22 +154,24 @@ describe('FilterParser', () => {
 
   describe('comparison expressions', () => {
     it('should throw InvalidExpression when comparison operand is an empty object', () => {
-      const badExpression: Expression = {
+      const badExpression = {
         dog: { equals: {} },
       };
-      expect(() => FilterParser.parse(badExpression)).toThrow(
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
         InvalidExpression,
       );
     });
 
     it('should parse an equals expression with an array operand', () => {
-      const badExpression = {
-        phoneNumbers: { equals: ['+56 30000000', '+51 70000000'] },
-      };
-      expect(FilterParser.parse(badExpression)).toMatchObject({
+      expect(
+        FilterParser.parse({
+          phoneNumbers: { equals: ['+56 30000000', '+51 70000000'] },
+        }),
+      ).toMatchObject({
         kind: 'ComparisonNode',
         left: {
           kind: 'FieldNode',
+          value: 'phoneNumbers',
         },
         right: {
           kind: 'ArrayNode',
@@ -179,6 +197,15 @@ describe('FilterParser', () => {
     it('should throw InvalidExpression when a field contains more than one operator', () => {
       const badExpression = {
         age: { gt: 10, lt: 20 },
+      };
+      expect(() => FilterParser.parse(badExpression as any)).toThrow(
+        InvalidExpression,
+      );
+    });
+
+    it('should throw InvalidExpression when greater or less operator is boolean', () => {
+      const badExpression = {
+        score: { gt: true },
       };
       expect(() => FilterParser.parse(badExpression as any)).toThrow(
         InvalidExpression,
@@ -225,17 +252,41 @@ describe('FilterParser', () => {
     });
 
     it('should parse a comparison between two fields', () => {
-      const expression: Expression = {
+      const result = FilterParser.parse({
         startDate: { lte: '$endDate' },
-      };
-
-      const result = FilterParser.parse(expression);
+      });
 
       expect(result).toMatchObject({
         kind: 'ComparisonNode',
         left: { kind: 'FieldNode', value: 'startDate' },
         operator: '<=',
         right: { kind: 'FieldNode', value: 'endDate' },
+      });
+    });
+
+    it('should parse a comparison with greater than or equal operator', () => {
+      const result = FilterParser.parse({
+        rate: { gte: 23 },
+      });
+
+      expect(result).toMatchObject({
+        kind: 'ComparisonNode',
+        left: { kind: 'FieldNode', value: 'rate' },
+        operator: '>=',
+        right: { kind: 'LiteralNode', value: 23 },
+      });
+    });
+
+    it('should parse a comparison with less than or equal operator', () => {
+      const result = FilterParser.parse({
+        name: { lte: 'another day in paradise' },
+      });
+
+      expect(result).toMatchObject({
+        kind: 'ComparisonNode',
+        left: { kind: 'FieldNode', value: 'name' },
+        operator: '<=',
+        right: { kind: 'LiteralNode', value: 'another day in paradise' },
       });
     });
 
@@ -251,7 +302,7 @@ describe('FilterParser', () => {
 
   describe('not expressions', () => {
     it('should throw InvalidExpression when not expression is an empty object', () => {
-      const badExpression: Expression = {
+      const badExpression = {
         not: {},
       };
       expect(() => FilterParser.parse(badExpression)).toThrow(
@@ -406,7 +457,7 @@ describe('FilterParser', () => {
     });
 
     it('should parse a valid in expression containing nested array and field expressions', () => {
-      const expression: Expression<{}> = {
+      const expression: Expression = {
         cat: { in: ['dog', '$animal', ['$dog', ['duck']]] },
       };
 
@@ -467,6 +518,14 @@ describe('FilterParser', () => {
 
       expect(resultParse).toMatchObject({
         kind: 'ComparisonNode',
+      });
+    });
+
+    it('should parse a direct value', () => {
+      const resultParse = FilterParser.parse('$username');
+      expect(resultParse).toMatchObject({
+        kind: 'FieldNode',
+        value: 'username',
       });
     });
 

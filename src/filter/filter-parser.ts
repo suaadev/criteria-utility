@@ -1,5 +1,5 @@
 import InvalidExpression from '../exceptions/invalid-expression.js';
-import * as ast from './ast.js';
+import * as Ast from './ast.js';
 import {
   buildArrayNode,
   buildComparisonNode,
@@ -9,11 +9,11 @@ import {
   buildLogicalNode,
   buildNotNode,
 } from './node-builders.js';
-import * as grammar from './grammar.js';
+import * as Grammar from './grammar.js';
 
 const mapComparisonOperator: Record<
-  grammar.ComparisonOperator,
-  ast.NodeComparisonOperator
+  Grammar.ComparisonOperator,
+  Ast.NodeComparisonOperator
 > = {
   equals: '==',
   diff: '!=',
@@ -24,8 +24,8 @@ const mapComparisonOperator: Record<
 };
 
 const mapLogicalOperator: Record<
-  grammar.LogicalOperator,
-  ast.NodeLogicalOperator
+  Grammar.LogicalOperator,
+  Ast.NodeLogicalOperator
 > = {
   and: '&&',
   or: '||',
@@ -33,7 +33,9 @@ const mapLogicalOperator: Record<
 
 const idExpressionRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
-export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
+export function parse<T extends Record<string, Grammar.ValidValueTypes>>(
+  input: Grammar.Expression<T>,
+): Ast.ExpressionNode {
   // Field expressions
   if (typeof input === 'string' && input.charAt(0) === '$') {
     const field: string = input.slice(1);
@@ -46,7 +48,7 @@ export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
     input === null ||
     ['string', 'number', 'boolean'].includes(typeof input)
   ) {
-    return buildLiteralNode(input as grammar.LiteralExpression);
+    return buildLiteralNode(input as Grammar.LiteralExpression);
   }
 
   // Array Expression
@@ -88,7 +90,7 @@ export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
   // Logic operators
 
   if (key === 'and' || key === 'or') {
-    const expressionsInput = (input as grammar.LogicalExpression<T>)[key];
+    const expressionsInput = (input as Grammar.LogicalExpression<T>)[key];
 
     if (!Array.isArray(expressionsInput))
       throw new InvalidExpression(
@@ -103,7 +105,7 @@ export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
       );
     }
 
-    const expressions: ast.LogicalNode['left'][] = [];
+    const expressions: Ast.LogicalNode['left'][] = [];
 
     for (const expressionInput of expressionsInput) {
       const expression = parse(expressionInput);
@@ -130,9 +132,9 @@ export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
   // Not expression
 
   if (key === 'not') {
-    const expressionInput = (input as grammar.NotExpression<T>)['not'];
+    const expressionInput = (input as Grammar.NotExpression<T>)['not'];
 
-    const expression: ast.ExpressionNode = parse(expressionInput);
+    const expression: Ast.ExpressionNode = parse(expressionInput);
 
     if (
       expression.kind !== 'FieldNode' &&
@@ -152,16 +154,11 @@ export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
 
   validateFieldExpression(key);
 
-  const field = key as keyof T;
+  const operation = (input as T)[
+    key
+  ] as Grammar.RightSideOperand<Grammar.LiteralExpression>;
 
-  const operation = (
-    input as Record<
-      keyof T,
-      Partial<grammar.InOperand & grammar.ComparisonOperand<T>>
-    >
-  )[field];
-
-  const keysOperation = Object.keys(operation);
+  const keysOperation = Object.keys(operation ?? {});
 
   if (keysOperation.length !== 1) {
     throw new InvalidExpression('The field requires an operand', input);
@@ -180,10 +177,30 @@ export function parse<T>(input: grammar.Expression<T>): ast.ExpressionNode {
   ) {
     const expressionInput = operation[operator];
 
+    if (expressionInput === undefined) {
+      throw new InvalidExpression(
+        'The value in Comparison expression is invalid',
+        input,
+      );
+    }
+
+    if (
+      (operator === 'gt' ||
+        operator === 'gte' ||
+        operator === 'lt' ||
+        operator === 'lte') &&
+      typeof expressionInput !== 'number' &&
+      typeof expressionInput !== 'string'
+    ) {
+      throw new InvalidExpression(
+        'The Comparison expression with greater and less operators requires number or string values',
+        input,
+      );
+    }
     return buildComparisonNode(
       buildFieldNode(key),
       mapComparisonOperator[operator],
-      parse(expressionInput ?? null),
+      parse(expressionInput),
     );
   }
 

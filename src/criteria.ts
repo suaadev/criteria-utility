@@ -3,7 +3,7 @@ import InvalidOrderBy from './exceptions/invalid-orderby.js';
 import InvalidPagination from './exceptions/invalid-pagination.js';
 import { ExpressionNode } from './filter/ast.js';
 import * as FilterParser from './filter/filter-parser.js';
-import { Expression } from './filter/grammar.js';
+import { Expression, ValidValueTypes } from './filter/grammar.js';
 import Pagination from './pagination.js';
 
 type OrderBy = Map<string, Sort>;
@@ -12,14 +12,18 @@ export type Sort = 'ASC' | 'DESC';
 
 export type OrderByRaw<T> = [T extends object ? keyof T : string, Sort][];
 
-export interface CriteriaOptions<T = Record<string, unknown>> {
+export interface CriteriaOptions<
+  T extends Record<string, ValidValueTypes> = Record<string, ValidValueTypes>,
+> {
   filter?: Expression<T> | null;
   pagination?: Pagination | null;
   orderBy?: OrderByRaw<T> | null;
   limit?: number | null;
 }
 
-export class Criteria<T = Record<string, unknown>> {
+export class Criteria<
+  T extends Record<string, ValidValueTypes> = Record<string, ValidValueTypes>,
+> {
   private orderBy_: OrderBy;
 
   private constructor(
@@ -37,15 +41,15 @@ export class Criteria<T = Record<string, unknown>> {
   /**
    * @deprecated use Criteria.create instead
    */
-  static build<T = Record<string, unknown>>(
-    criteriaOptions: CriteriaOptions<NoInfer<T>> = {},
-  ) {
+  static build<
+    T extends Record<string, ValidValueTypes> = Record<string, ValidValueTypes>,
+  >(criteriaOptions: CriteriaOptions<NoInfer<T>> = {}) {
     return Criteria.create<T>(criteriaOptions);
   }
 
-  static create<T = Record<string, unknown>>(
-    criteriaOptions: CriteriaOptions<NoInfer<T>> = {},
-  ) {
+  static create<
+    T extends Record<string, ValidValueTypes> = Record<string, ValidValueTypes>,
+  >(criteriaOptions: CriteriaOptions<NoInfer<T>> = {}) {
     const { filter, limit, orderBy, pagination } = criteriaOptions;
 
     const filterExpression = filter ? FilterParser.parse(filter) : null;
