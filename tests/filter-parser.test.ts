@@ -596,4 +596,54 @@ describe('FilterParser', () => {
       expect(() => FilterParser.parse(expression)).toThrow(InvalidExpression);
     });
   });
+
+  describe('IsNull expression', () => {
+    it('should pass with valid isNull expression', () => {
+      expect(FilterParser.parse({ infinite: { isNull: true } })).toMatchObject({
+        kind: 'IsNullNode',
+        isNull: true,
+        value: {
+          kind: 'FieldNode',
+          value: 'infinite',
+        },
+      });
+      expect(FilterParser.parse({ fear: { isNull: false } })).toMatchObject({
+        kind: 'IsNullNode',
+        isNull: false,
+        value: {
+          kind: 'FieldNode',
+          value: 'fear',
+        },
+      });
+    });
+    it('should parse a not expression wrapping an isNull expression', () => {
+      expect(
+        FilterParser.parse({ not: { email: { isNull: true } } }),
+      ).toMatchObject({
+        kind: 'NotNode',
+        expression: {
+          kind: 'IsNullNode',
+          isNull: true,
+          value: { kind: 'FieldNode', value: 'email' },
+        },
+      });
+    });
+    it('should throw InvalidExpression with non-boolean value', () => {
+      expect(() => FilterParser.parse({ love: { isNull: 1 } } as any)).toThrow(
+        InvalidExpression,
+      );
+      expect(() =>
+        FilterParser.parse({ feelings: { isNull: 'true' } as any }),
+      ).toThrow(InvalidExpression);
+      expect(() =>
+        FilterParser.parse({ hate: { isNull: () => {} } } as any),
+      ).toThrow(InvalidExpression);
+      expect(() =>
+        FilterParser.parse({ blame: { isNull: null } as any }),
+      ).toThrow(InvalidExpression);
+      expect(() =>
+        FilterParser.parse({ money: { isNull: undefined } as any }),
+      ).toThrow(InvalidExpression);
+    });
+  });
 });

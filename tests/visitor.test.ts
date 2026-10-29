@@ -5,6 +5,7 @@ import {
   buildComparisonNode,
   buildFieldNode,
   buildInNode,
+  buildIsNullNode,
   buildLiteralNode,
   buildLogicalNode,
   buildNotNode,
@@ -30,6 +31,10 @@ describe('Visitor suit test', () => {
 
   const visitInNode = vi.fn((inNode: Ast.InNode) => inNode.kind);
 
+  const visitIsNullNode = vi.fn(
+    (isNullNode: Ast.IsNullNode) => isNullNode.kind,
+  );
+
   const visitorTest: Visitor<string> = {
     visitLiteralNode,
     visitFieldNode,
@@ -38,6 +43,7 @@ describe('Visitor suit test', () => {
     visitArrayNode,
     visitNotNode,
     visitInNode,
+    visitIsNullNode,
   };
 
   beforeEach(() => {
@@ -48,6 +54,7 @@ describe('Visitor suit test', () => {
     visitArrayNode.mockClear();
     visitNotNode.mockClear();
     visitInNode.mockClear();
+    visitIsNullNode.mockClear();
   });
 
   it('should pass with AndNode', () => {
@@ -127,5 +134,16 @@ describe('Visitor suit test', () => {
     expect(() => comparisonNode.accept({} as any)).toThrow(TypeError);
     expect(visitComparisonNode).toHaveBeenCalledOnce();
     expect(visitComparisonNode).toHaveBeenCalledWith(comparisonNode);
+  });
+
+  it('should pass with IsNullNode', () => {
+    const isNullNode: Ast.IsNullNode = buildIsNullNode(
+      true,
+      buildFieldNode('email'),
+    );
+    expect(isNullNode.accept(visitorTest)).toEqual(isNullNode.kind);
+    expect(() => isNullNode.accept({} as any)).toThrow(TypeError);
+    expect(visitIsNullNode).toHaveBeenCalledOnce();
+    expect(visitIsNullNode).toHaveBeenCalledWith(isNullNode);
   });
 });
