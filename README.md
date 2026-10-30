@@ -4,7 +4,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
 
-`Criteria` is a TypeScript library that implements the Criteria pattern to specify and transport search and filtering criteria. A key use case is managing repository communication. When implementing repositories, we often expose specific methods such as `find`, `save`, `findOne`, `update`, etc. These methods represent the action to perform, but we frequently need to specify query criteria to fulfill that action.
+`Criteria` is a TypeScript library that implements the Criteria pattern to specify, validate, and transport complex search, filtering, and pagination intent across application layers.
 
 ## Installation
 
@@ -29,8 +29,6 @@ const criteria = Criteria.create({
     ],
   },
 });
-
-const user: User | null = await userRepository.findOne(criteria);
 ```
 
 ## Usage
@@ -119,6 +117,7 @@ Operations are actions performed on a field or value, such as comparing values f
 |   not    |                 Negates an expression                  |
 |    in    | Checks if a value is contained within a list of values |
 |  isNull  |            Checks if a value is null or not            |
+| between  |       Checks if a value within a specific range        |
 
 **Examples:**
 
@@ -136,6 +135,14 @@ Operations are actions performed on a field or value, such as comparing values f
 {
   trackId: {
     isNull: true; // “false” to checks that “trackId” is not null
+  }
+}
+```
+
+```typescript
+{
+  score: {
+    between: [1.3, 90];
   }
 }
 ```
@@ -162,8 +169,6 @@ const criteria = Criteria.create({
   ],
   limit: 15,
 });
-
-const users = await userRepository.findAll(criteria);
 ```
 
 > **Note:** If pagination is specified without a `limit`, `Criteria` throws an exception. Pagination strictly requires a page size (`limit`) to operate: page-based pagination uses it to calculate the offset (`OFFSET = (page - 1) * limit`), and cursor-based pagination uses it to bound the batch size.
@@ -198,8 +203,6 @@ const criteria = Criteria.create({
   pagination: Pagination.byCursor(cursor),
   limit: 30,
 });
-
-const users = await userRepository.findAll(criteria);
 ```
 
 > **Note:** `Pagination` internally uses `CursorBase64Serializer` by default, but you can pass a custom implementation as the second argument to `Pagination.byCursor`.
@@ -242,6 +245,7 @@ export interface Visitor<T = void> {
   visitInNode(inNode: InNode): T;
   visitFieldNode(fieldNode: FieldNode): T;
   visitIsNullNode(isNullNode: IsNullNode): T;
+  visitBetweenNode(betweenNode: BetweenNode): T;
 }
 ```
 
@@ -250,7 +254,7 @@ export interface Visitor<T = void> {
 ```typescript
 import { Criteria, type Ast, type Visitor } from '@criteria-ts/core';
 
-class CustomVisitor implements Visitor<string> {
+class CustomExampleVisitor implements Visitor<string> {
   visitLiteralNode(node: Ast.LiteralNode): string {
     return `${node.value}`;
   }
@@ -282,6 +286,10 @@ class CustomVisitor implements Visitor<string> {
   visitIsNullNode(node: Ast.IsNullNode): string {
     return `${node.value.accept(this)} IS ${node.isNull ? 'NULL' : 'NOT NULL'}`;
   }
+
+  visitBetweenNode(node: Ast.BetweenNode): string {
+    return `${node.value.accept(this)} IN RANGE(${node.start.accept(this)}  ${node.end.accept(this)})`;
+  }
 }
 
 const criteria = Criteria.create({
@@ -290,7 +298,7 @@ const criteria = Criteria.create({
   },
 });
 
-const visitor = new CustomVisitor();
+const visitor = new CustomExampleVisitor();
 const result = criteria.filterExpression?.accept(visitor);
 ```
 
