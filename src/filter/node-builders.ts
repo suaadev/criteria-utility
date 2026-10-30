@@ -1,8 +1,8 @@
-import * as ast from './ast.js';
+import * as Ast from './ast.js';
 import { Visitor } from './visitor.js';
 
-export function buildLiteralNode(value: ast.LiteralValue): ast.LiteralNode {
-  const obj: ast.LiteralNode = {
+export function buildLiteralNode(value: Ast.LiteralValue): Ast.LiteralNode {
+  const obj: Ast.LiteralNode = {
     kind: 'LiteralNode',
     value,
     accept: <T>(visitor: Visitor<T>) => visitor.visitLiteralNode(obj),
@@ -11,11 +11,11 @@ export function buildLiteralNode(value: ast.LiteralValue): ast.LiteralNode {
 }
 
 export function buildComparisonNode(
-  left: ast.ExpressionNode,
-  operator: ast.NodeComparisonOperator,
-  right: ast.ExpressionNode,
-): ast.ComparisonNode {
-  const obj: ast.ComparisonNode = {
+  left: Ast.ExpressionNode,
+  operator: Ast.NodeComparisonOperator,
+  right: Ast.ExpressionNode,
+): Ast.ComparisonNode {
+  const obj: Ast.ComparisonNode = {
     kind: 'ComparisonNode',
     left,
     operator,
@@ -26,11 +26,11 @@ export function buildComparisonNode(
 }
 
 export function buildLogicalNode(
-  left: ast.LogicalNode['left'],
-  operator: ast.NodeLogicalOperator,
-  right: ast.LogicalNode['right'],
-): ast.LogicalNode {
-  const obj: ast.LogicalNode = {
+  left: Ast.LogicalNode['left'],
+  operator: Ast.NodeLogicalOperator,
+  right: Ast.LogicalNode['right'],
+): Ast.LogicalNode {
+  const obj: Ast.LogicalNode = {
     kind: 'LogicalNode',
     left,
     operator,
@@ -41,9 +41,9 @@ export function buildLogicalNode(
 }
 
 export function buildNotNode(
-  expression: ast.NotNode['expression'],
-): ast.NotNode {
-  const obj: ast.NotNode = {
+  expression: Ast.NotNode['expression'],
+): Ast.NotNode {
+  const obj: Ast.NotNode = {
     kind: 'NotNode',
     expression,
     accept: <T>(visitor: Visitor<T>) => visitor.visitNotNode(obj),
@@ -51,8 +51,8 @@ export function buildNotNode(
   return Object.freeze(obj);
 }
 
-export function buildArrayNode(items: ast.ArrayNode['items']): ast.ArrayNode {
-  const obj: ast.ArrayNode = {
+export function buildArrayNode(items: Ast.ArrayNode['items']): Ast.ArrayNode {
+  const obj: Ast.ArrayNode = {
     kind: 'ArrayNode',
     items: Object.freeze(items),
     accept: <T>(visitor: Visitor<T>) => visitor.visitArrayNode(obj),
@@ -61,10 +61,10 @@ export function buildArrayNode(items: ast.ArrayNode['items']): ast.ArrayNode {
 }
 
 export function buildInNode(
-  value: ast.InNode['value'],
-  arrayExpression: ast.ArrayNode,
-): ast.InNode {
-  const obj: ast.InNode = {
+  value: Ast.InNode['value'],
+  arrayExpression: Ast.ArrayNode,
+): Ast.InNode {
+  const obj: Ast.InNode = {
     kind: 'InNode',
     arrayExpression,
     value,
@@ -73,8 +73,8 @@ export function buildInNode(
   return Object.freeze(obj);
 }
 
-export function buildFieldNode(value: string): ast.FieldNode {
-  const obj: ast.FieldNode = {
+export function buildFieldNode(value: string): Ast.FieldNode {
+  const obj: Ast.FieldNode = {
     kind: 'FieldNode',
     value,
     accept: <T>(visitor: Visitor<T>) => visitor.visitFieldNode(obj),
@@ -84,13 +84,28 @@ export function buildFieldNode(value: string): ast.FieldNode {
 
 export function buildIsNullNode(
   isNull: boolean,
-  value: ast.IsNullNode['value'],
-): ast.IsNullNode {
-  const obj: ast.IsNullNode = {
+  value: Ast.IsNullNode['value'],
+): Ast.IsNullNode {
+  const obj: Ast.IsNullNode = {
     kind: 'IsNullNode',
     isNull,
     value,
     accept: <T>(visitor: Visitor<T>) => visitor.visitIsNullNode(obj),
+  };
+  return Object.freeze(obj);
+}
+
+export function buildBetweenNode(
+  value: Ast.BetweenNode['value'],
+  start: Ast.BetweenNode['start'],
+  end: Ast.BetweenNode['end'],
+): Ast.BetweenNode {
+  const obj: Ast.BetweenNode = {
+    kind: 'BetweenNode',
+    value,
+    end,
+    start,
+    accept: <T>(visitor: Visitor<T>) => visitor.visitBetweenNode(obj),
   };
   return Object.freeze(obj);
 }

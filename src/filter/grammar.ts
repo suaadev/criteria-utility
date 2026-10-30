@@ -1,6 +1,8 @@
 export type LiteralExpression = number | boolean | null | string;
 
-type StringAndNumberValid<T> = T extends string | number ? T : never;
+type StringAndNumberValid<T> = T extends string | number
+  ? T | FieldExpression
+  : never;
 
 export type ComparisonOperand<T> = Partial<{
   equals: T;
@@ -16,9 +18,7 @@ export type ComparisonOperator = keyof ComparisonOperand<ValidValueTypes>;
 export type FieldExpression = `$${string}`;
 
 export type ComparisonExpression<T> = Partial<{
-  [K in keyof T]: ComparisonOperand<
-    T extends object ? T[K] | FieldExpression : ValidValueTypes
-  >;
+  [K in keyof T]: ComparisonOperand<T extends object ? T[K] : ValidValueTypes>;
 }>;
 
 export type ArrayExpression = (LiteralExpression | ArrayExpression)[];
@@ -41,19 +41,6 @@ export interface NotExpression<T> {
   not: OperationExpression<T>;
 }
 
-export type RightSideOperand<T> = Partial<
-  InOperand & ComparisonOperand<T> & IsNullOperand
->;
-
-export type OperationExpression<T> =
-  | LogicalExpression<T>
-  | ComparisonExpression<T>
-  | InExpression<T>
-  | NotExpression<T>
-  | IsNullExpression<T>;
-
-export type ValidValueTypes = LiteralExpression | ArrayExpression;
-
 export interface IsNullOperand {
   isNull: boolean;
 }
@@ -61,6 +48,30 @@ export interface IsNullOperand {
 export type IsNullExpression<T> = Partial<{
   [K in keyof T]: IsNullOperand;
 }>;
+
+export interface BetweenOperand<T> {
+  between: [T, T];
+}
+
+export type BetweenExpression<T> = Partial<{
+  [K in keyof T]: BetweenOperand<
+    T[K] extends undefined ? LiteralExpression : T[K]
+  >;
+}>;
+
+export type ValidValueTypes = LiteralExpression | ArrayExpression;
+
+export type RightSideOperand<T> = Partial<
+  InOperand & ComparisonOperand<T> & IsNullOperand & BetweenOperand<T>
+>;
+
+export type OperationExpression<T> =
+  | LogicalExpression<T>
+  | ComparisonExpression<T>
+  | InExpression<T>
+  | NotExpression<T>
+  | IsNullExpression<T>
+  | BetweenExpression<T>;
 
 export type Expression<
   T extends Record<string, ValidValueTypes> = Record<string, ValidValueTypes>,

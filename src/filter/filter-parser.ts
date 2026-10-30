@@ -2,6 +2,7 @@ import InvalidExpression from '../exceptions/invalid-expression.js';
 import * as Ast from './ast.js';
 import {
   buildArrayNode,
+  buildBetweenNode,
   buildComparisonNode,
   buildFieldNode,
   buildInNode,
@@ -116,7 +117,8 @@ export function parse<T extends Record<string, Grammar.ValidValueTypes>>(
         expression.kind !== 'InNode' &&
         expression.kind !== 'NotNode' &&
         expression.kind !== 'FieldNode' &&
-        expression.kind !== 'IsNullNode'
+        expression.kind !== 'IsNullNode' &&
+        expression.kind !== 'BetweenNode'
       ) {
         throw new InvalidExpression(
           'The LogicExpression requires valid expressions',
@@ -144,7 +146,8 @@ export function parse<T extends Record<string, Grammar.ValidValueTypes>>(
       expression.kind !== 'LogicalNode' &&
       expression.kind !== 'NotNode' &&
       expression.kind !== 'InNode' &&
-      expression.kind !== 'IsNullNode'
+      expression.kind !== 'IsNullNode' &&
+      expression.kind !== 'BetweenNode'
     ) {
       throw new InvalidExpression(
         `The NOT expression requires a valid expression`,
@@ -244,6 +247,38 @@ export function parse<T extends Record<string, Grammar.ValidValueTypes>>(
     const field = buildFieldNode(key);
 
     return buildIsNullNode(isNullValue, field);
+  }
+
+  // Between expression
+  if (operator === 'between') {
+    const betweenValue = operation[operator];
+
+    if (!Array.isArray(betweenValue) || betweenValue.length !== 2) {
+      throw new InvalidExpression(
+        'The between expression must contain a array with start and end values',
+        input,
+      );
+    }
+
+    const leftExpression = parse(betweenValue[0]);
+    const rightExpression = parse(betweenValue[1]);
+
+    if (
+      (leftExpression.kind !== 'LiteralNode' &&
+        leftExpression.kind !== 'FieldNode') ||
+      (rightExpression.kind !== 'LiteralNode' &&
+        rightExpression.kind !== 'FieldNode')
+    ) {
+      throw new InvalidExpression(
+        'The left or right expression must be a LiteralExpression or FieldExpression',
+      );
+    }
+
+    return buildBetweenNode(
+      buildFieldNode(key),
+      leftExpression,
+      rightExpression,
+    );
   }
 
   throw new InvalidExpression('The input expression is invalid', input);

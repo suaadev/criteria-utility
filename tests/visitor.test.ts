@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Ast, Visitor } from '../src';
 import {
   buildArrayNode,
+  buildBetweenNode,
   buildComparisonNode,
   buildFieldNode,
   buildInNode,
@@ -35,6 +36,10 @@ describe('Visitor suit test', () => {
     (isNullNode: Ast.IsNullNode) => isNullNode.kind,
   );
 
+  const visitBetweenNode = vi.fn(
+    (betweenNode: Ast.BetweenNode) => betweenNode.kind,
+  );
+
   const visitorTest: Visitor<string> = {
     visitLiteralNode,
     visitFieldNode,
@@ -44,6 +49,7 @@ describe('Visitor suit test', () => {
     visitNotNode,
     visitInNode,
     visitIsNullNode,
+    visitBetweenNode,
   };
 
   beforeEach(() => {
@@ -55,6 +61,7 @@ describe('Visitor suit test', () => {
     visitNotNode.mockClear();
     visitInNode.mockClear();
     visitIsNullNode.mockClear();
+    visitBetweenNode.mockClear();
   });
 
   it('should pass with AndNode', () => {
@@ -145,5 +152,17 @@ describe('Visitor suit test', () => {
     expect(() => isNullNode.accept({} as any)).toThrow(TypeError);
     expect(visitIsNullNode).toHaveBeenCalledOnce();
     expect(visitIsNullNode).toHaveBeenCalledWith(isNullNode);
+  });
+
+  it('should pass with BetweenNode', () => {
+    const betweenNode: Ast.BetweenNode = buildBetweenNode(
+      buildFieldNode('age'),
+      buildLiteralNode(0),
+      buildFieldNode('max_age'),
+    );
+    expect(betweenNode.accept(visitorTest)).toEqual(betweenNode.kind);
+    expect(() => betweenNode.accept({} as any)).toThrow(TypeError);
+    expect(visitBetweenNode).toHaveBeenCalledOnce();
+    expect(visitBetweenNode).toHaveBeenCalledWith(betweenNode);
   });
 });
