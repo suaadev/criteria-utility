@@ -118,6 +118,7 @@ Operations are actions performed on a field or value, such as comparing values f
 | :------: | :----------------------------------------------------: |
 |   not    |                 Negates an expression                  |
 |    in    | Checks if a value is contained within a list of values |
+|  isNull  |            Checks if a value is null or not            |
 
 **Examples:**
 
@@ -127,6 +128,14 @@ Operations are actions performed on a field or value, such as comparing values f
     pilotName: {
       in: ["leclerc", "hammilton", "alonso", "perez"]
     }
+  }
+}
+```
+
+```typescript
+{
+  trackId: {
+    isNull: true; // “false” to checks that “trackId” is not null
   }
 }
 ```
@@ -232,6 +241,7 @@ export interface Visitor<T = void> {
   visitArrayNode(arrayNode: ArrayNode): T;
   visitInNode(inNode: InNode): T;
   visitFieldNode(fieldNode: FieldNode): T;
+  visitIsNullNode(isNullNode: IsNullNode): T;
 }
 ```
 
@@ -268,6 +278,10 @@ class CustomVisitor implements Visitor<string> {
   visitInNode(node: Ast.InNode): string {
     return `${node.value.accept(this)} IN ${node.arrayExpression.accept(this)}`;
   }
+
+  visitIsNullNode(node: Ast.IsNullNode): string {
+    return `${node.value.accept(this)} IS ${node.isNull ? 'NULL' : 'NOT NULL'}`;
+  }
 }
 
 const criteria = Criteria.create({
@@ -280,12 +294,8 @@ const visitor = new CustomVisitor();
 const result = criteria.filterExpression?.accept(visitor);
 ```
 
-> **Note:** All AST node interfaces (`LiteralNode`, `ComparisonNode`, `LogicalNode`, `NotNode`, `InNode`, `FieldNode`, `ArrayNode`) extend the base `Node` interface and are available under the `Ast` namespace.
+> **Note:** All AST node interfaces extend the base `Node` interface and are available under the `Ast` namespace.
 
 ## Development
 
-This library is currently under active development. If you encounter any bugs or areas for improvement, feel free to report them.
-
-## Contributing
-
-Contributions are welcome. If you have ideas for improvements, find a bug, or want to add new functionality, feel free to open an issue or submit a Pull Request.
+This library is currently under active development. If you encounter any bugs or areas for improvement, feel free to open an issue or submit a Pull Request.
