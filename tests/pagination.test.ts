@@ -121,7 +121,8 @@ describe('Pagination', () => {
         page: null,
         cursor: [['field', 'value', 'DESC']],
       });
-
+      expect(result.page).toBeNull();
+      expect(result.cursor).toStrictEqual([['field', 'value', 'DESC']]);
       expect(decode).toHaveBeenCalledWith(cursorTest);
       expect(decode).toHaveReturnedWith([['field', 'value', 'DESC']]);
       expect(decode).toHaveBeenCalledTimes(1);
@@ -138,7 +139,8 @@ describe('Pagination', () => {
         page: null,
         cursor: [['field', 567, 'ASC']],
       });
-
+      expect(result.page).toBeNull();
+      expect(result.cursor).toStrictEqual([['field', 567, 'ASC']]);
       expect(decode).toHaveBeenCalledWith(cursorTest);
       expect(decode).toHaveReturnedWith([['field', 567, 'ASC']]);
       expect(decode).toHaveBeenCalledTimes(1);
