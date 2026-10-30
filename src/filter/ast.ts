@@ -19,7 +19,13 @@ export interface LiteralNode extends Node {
 export interface NotNode extends Node {
   kind: 'NotNode';
   expression:
-    LogicalNode | ComparisonNode | FieldNode | InNode | NotNode | IsNullNode;
+    | LogicalNode
+    | ComparisonNode
+    | FieldNode
+    | InNode
+    | NotNode
+    | IsNullNode
+    | BetweenNode;
 }
 
 export interface ComparisonNode extends Node {
@@ -58,6 +64,13 @@ export interface IsNullNode extends Node {
   value: FieldNode;
 }
 
+export interface BetweenNode extends Node {
+  kind: 'BetweenNode';
+  value: FieldNode;
+  start: FieldNode | LiteralNode;
+  end: FieldNode | LiteralNode;
+}
+
 export type ExpressionNode =
   | LiteralNode
   | FieldNode
@@ -66,4 +79,5 @@ export type ExpressionNode =
   | InNode
   | NotNode
   | ArrayNode
-  | IsNullNode;
+  | IsNullNode
+  | BetweenNode;

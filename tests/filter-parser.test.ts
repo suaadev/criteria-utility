@@ -381,6 +381,24 @@ describe('FilterParser', () => {
         },
       });
     });
+
+    it('should parse a valid not expression wrapping a between expression', () => {
+      const expression: Expression = {
+        not: { limit: { between: [0, 100] } },
+      };
+
+      const result = FilterParser.parse(expression);
+
+      expect(result).toMatchObject({
+        kind: 'NotNode',
+        expression: {
+          kind: 'BetweenNode',
+          value: { kind: 'FieldNode', value: 'limit' },
+          start: { kind: 'LiteralNode', value: 0 },
+          end: { kind: 'LiteralNode', value: 100 },
+        },
+      });
+    });
   });
 
   describe('in expressions', () => {
@@ -643,6 +661,112 @@ describe('FilterParser', () => {
       ).toThrow(InvalidExpression);
       expect(() =>
         FilterParser.parse({ money: { isNull: undefined } as any }),
+      ).toThrow(InvalidExpression);
+    });
+  });
+
+  describe('Between expression', () => {
+    it('should pass with between expression valid', () => {
+      expect(
+        FilterParser.parse({
+          score: { between: [100, '$max_score'] },
+        }),
+      ).toMatchObject({
+        kind: 'BetweenNode',
+        value: {
+          kind: 'FieldNode',
+          value: 'score',
+        },
+        start: {
+          kind: 'LiteralNode',
+          value: 100,
+        },
+        end: {
+          kind: 'FieldNode',
+          value: 'max_score',
+        },
+      });
+
+      expect(FilterParser.parse({ age: { between: [18, 30] } })).toMatchObject({
+        kind: 'BetweenNode',
+        value: {
+          kind: 'FieldNode',
+          value: 'age',
+        },
+        start: {
+          kind: 'LiteralNode',
+          value: 18,
+        },
+        end: {
+          kind: 'LiteralNode',
+          value: 30,
+        },
+      });
+
+      expect(
+        FilterParser.parse({
+          score: { between: ['$min_score', '$max_score'] },
+        }),
+      ).toMatchObject({
+        kind: 'BetweenNode',
+        value: {
+          kind: 'FieldNode',
+          value: 'score',
+        },
+        start: {
+          kind: 'FieldNode',
+          value: 'min_score',
+        },
+        end: {
+          kind: 'FieldNode',
+          value: 'max_score',
+        },
+      });
+    });
+
+    it('should throw InvalidExpression', () => {
+      expect(() =>
+        FilterParser.parse({ age: { between: null } } as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() =>
+        FilterParser.parse({ age: { between: [{}, () => {}] } } as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() =>
+        FilterParser.parse({ age: { between: [true, () => {}] } } as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() =>
+        FilterParser.parse({ age: { between: [undefined, undefined] } } as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() => FilterParser.parse({ age: { between: [] } } as any)).toThrow(
+        InvalidExpression,
+      );
+
+      expect(() =>
+        FilterParser.parse({ age: { between: [1] } } as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() =>
+        FilterParser.parse({
+          date: { between: [new Date('1999-01-01'), new Date('2020-01-01')] },
+        } as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() =>
+        FilterParser.parse({
+          date: {
+            between: [{ not: { result: { equals: 'fail' } } }, 1],
+          },
+        } as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() =>
+        FilterParser.parse({
+          date: { between: [3, [1, 2, 3, 4]] },
+        } as any),
       ).toThrow(InvalidExpression);
     });
   });

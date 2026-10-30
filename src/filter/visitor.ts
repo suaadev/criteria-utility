@@ -1,5 +1,6 @@
 import {
   ArrayNode,
+  BetweenNode,
   ComparisonNode,
   FieldNode,
   InNode,
@@ -18,4 +19,5 @@ export interface Visitor<T = void> {
   visitInNode(inNode: InNode): T;
   visitFieldNode(fieldNode: FieldNode): T;
   visitIsNullNode(isNullNode: IsNullNode): T;
+  visitBetweenNode(betweenNode: BetweenNode): T;
 }
