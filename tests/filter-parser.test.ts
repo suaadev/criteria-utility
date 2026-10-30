@@ -64,6 +64,61 @@ describe('FilterParser', () => {
     });
   });
 
+  describe('Array expressions', () => {
+    it('should parse a valid ArrayExpression', () => {
+      expect(
+        FilterParser.parse([1, 2, 3, 4, '5', '$nextNumber']),
+      ).toMatchObject({
+        kind: 'ArrayNode',
+        items: [
+          { kind: 'LiteralNode', value: 1 },
+          { kind: 'LiteralNode', value: 2 },
+          { kind: 'LiteralNode', value: 3 },
+          { kind: 'LiteralNode', value: 4 },
+          { kind: 'LiteralNode', value: '5' },
+          { kind: 'FieldNode', value: 'nextNumber' },
+        ],
+      });
+      expect(FilterParser.parse([-1, true])).toMatchObject({
+        kind: 'ArrayNode',
+        items: [
+          { kind: 'LiteralNode', value: -1 },
+          { kind: 'LiteralNode', value: true },
+        ],
+      });
+    });
+
+    it('should throw InvalidExpression', () => {
+      expect(() => FilterParser.parse([() => {}, () => {}] as any)).toThrow(
+        InvalidExpression,
+      );
+
+      expect(() => FilterParser.parse([{}] as any)).toThrow(InvalidExpression);
+
+      expect(() => FilterParser.parse([undefined, undefined] as any)).toThrow(
+        InvalidExpression,
+      );
+
+      expect(() => FilterParser.parse([new Date()] as any)).toThrow(
+        InvalidExpression,
+      );
+
+      expect(() =>
+        FilterParser.parse([{ name: { equals: 'David' } }] as any),
+      ).toThrow(InvalidExpression);
+      expect(() =>
+        FilterParser.parse([{ not: { x: { equals: 2 } } }] as any),
+      ).toThrow(InvalidExpression);
+
+      expect(() =>
+        FilterParser.parse([
+          { not: { y: { gt: 2 } } },
+          { a: { in: [1, 3, 4, 5] } },
+        ] as any),
+      ).toThrow(InvalidExpression);
+    });
+  });
+
   describe('logical expressions (and / or)', () => {
     it('should throw InvalidExpression when logical array is empty', () => {
       const badExpression = {
